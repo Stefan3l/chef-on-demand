@@ -94,4 +94,42 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { getAllChefs, createChef, getMe };
+// funzione per aggiornare il profilo del cuoco autenticato
+const updateChef = async (req, res) => {
+  const { first_name, last_name, email, phone, bio, profileImage, previewUrl } =
+    req.body;
+
+  // controllo se la email modificata esiste già
+  if (email) {
+    const existing = await prisma.chef.findUnique({
+      where: { email },
+    });
+    if (existing && existing.id !== req.user.id) {
+      return res.status(400).json({ error: "Email già in uso" });
+    }
+  }
+
+  try {
+    const updateChef = await prisma.chef.update({
+      where: { id: req.user.id },
+      data: {
+        first_name,
+        last_name,
+        bio,
+        email,
+        phone,
+        profileImage,
+        previewUrl,
+      },
+    });
+
+    res.json({ message: "Profilo aggiornato con successo", chef: updateChef });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Errore durante l'aggiornamento del profilo" });
+  }
+};
+
+module.exports = { getAllChefs, createChef, getMe, updateChef };
