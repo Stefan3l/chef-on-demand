@@ -1,0 +1,35 @@
+{
+  "name": "chef-on-demand-be",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js",
+    "seed:products": "node prisma/seeders/productsSeeder.js",
+    "seed:users": "node prisma/seeders/usersSeeder.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stefan3l/chef-on-demand-be.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Stefan3l/chef-on-demand-be/issues"
+  },
+  "homepage": "https://github.com/Stefan3l/chef-on-demand-be#readme",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.10.1",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
