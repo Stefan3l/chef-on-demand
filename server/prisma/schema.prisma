@@ -29,9 +29,12 @@ model Chef {
 model DishImage {
     id                    Int          @id @default(autoincrement())
     url                   String
+    caption               String? 
+    category              String
+    price                 Float
+
     chef                  Chef         @relation(fields: [chefId], references: [id])
     chefId                Int
-    caption               String? 
     createdAt             DateTime     @default(now())
 }
 

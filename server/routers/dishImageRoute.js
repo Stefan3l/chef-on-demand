@@ -5,6 +5,7 @@ const {
   uploadDishImage,
   updateDishImage,
   deleteDishImage,
+  getAllDishes,
 } = require("../controllers/dishImage");
 const verifyToken = require("../middlewares/verifyToken");
 
@@ -14,5 +15,7 @@ router.post("/dishes/upload", verifyToken, uploadDishImage);
 router.put("/dishes/:id", verifyToken, updateDishImage);
 // Definisce la rotta per eliminare un'immagine di un piatto
 router.delete("/dishes/:id", verifyToken, deleteDishImage);
+// Definisce la rotta per ottenere tutti i piatti con filtri
+router.get("/dishes", verifyToken, getAllDishes);
 
 module.exports = router;
