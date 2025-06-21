@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
+const jwt = require("jsonwebtoken");
 
 // funzione per ottenere tutti i cuochi
 const getAllChefs = async (req, res) => {
@@ -11,7 +12,11 @@ const getAllChefs = async (req, res) => {
         dishImages: true,
       },
     });
-    res.json(chefs);
+
+    // Non restituire la password nel response
+    const chefWithoutPassword = chefs.map(({ password, ...chef }) => chef);
+
+    res.json(chefWithoutPassword);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Richiesta non riuscita" });
@@ -63,7 +68,22 @@ const createChef = async (req, res) => {
 
     // Non restituire la password nel response
     const { password: _, ...chefWithoutPassword } = newChef;
-    res.status(201).json(chefWithoutPassword);
+
+    // generazione del token JWT
+    const token = jwt.sign(
+      {
+        id: newChef.id,
+        email: newChef.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
+
+    res.status(201).json({
+      message: "Cuoco creato con successo",
+      token,
+      chef: chefWithoutPassword,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Richiesta non riuscita" });
@@ -155,4 +175,19 @@ const updateChef = async (req, res) => {
   }
 };
 
-module.exports = { getAllChefs, createChef, getMe, updateChef };
+// funzione per eliminare un cuoco
+const deleteChef = async (req, res) => {
+  try {
+    await prisma.chef.delete({
+      where: { id: req.user.id },
+    });
+    res.json({ message: "Chef eliminato con successo" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Errore durante l'eliminazione del profilo" });
+  }
+};
+
+module.exports = { getAllChefs, createChef, getMe, updateChef, deleteChef };
