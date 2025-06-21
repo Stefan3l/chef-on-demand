@@ -123,4 +123,48 @@ const deleteChef = async (req, res) => {
   }
 };
 
-module.exports = { getAllChefs, getMe, updateChef, deleteChef };
+// funzione per avere il previewUrl del profilo del cuoco
+const getChefByPreviewUrl = async (req, res) => {
+  const { previewUrl } = req.params;
+
+  try {
+    const chef = await prisma.chef.findUnique({
+      where: { previewUrl },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        bio: true,
+        email: true,
+        profileImage: true,
+        previewUrl: true,
+        dishImages: {
+          select: {
+            id: true,
+            url: true,
+            caption: true,
+            category: true,
+            price: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+    if (!chef) {
+      return res.status(404).json({ error: "Chef non trovato" });
+    }
+
+    res.json(chef);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Errore durante il recupero del cuoco" });
+  }
+};
+
+module.exports = {
+  getAllChefs,
+  getMe,
+  updateChef,
+  deleteChef,
+  getChefByPreviewUrl,
+};
