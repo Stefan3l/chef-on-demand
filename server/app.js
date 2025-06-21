@@ -3,10 +3,12 @@ const app = express();
 require("dotenv").config();
 const cors = require("cors");
 const chefRoutes = require("./routers/chefRoutes");
+const authRoutes = require("./routers/authRoutes");
 
 app.use(cors());
 app.use(express.json());
 app.use("/api/chefs", chefRoutes);
+app.use("/api", authRoutes);
 
 // cors middleware
 
