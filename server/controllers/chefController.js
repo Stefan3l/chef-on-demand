@@ -70,4 +70,28 @@ const createChef = async (req, res) => {
   }
 };
 
-module.exports = { getAllChefs, createChef };
+// funzione per ottenere il profilo del cuoco autenticato
+const getMe = async (req, res) => {
+  try {
+    const chef = await prisma.chef.findUnique({
+      where: { id: req.user.id },
+      include: {
+        dishImages: true,
+      },
+    });
+
+    // Controlla se il cuoco esiste
+    if (!chef) {
+      return res.status(404).json({ error: "Chef non trovato" });
+    }
+    // Non restituire la password nel response
+    const { password: _, ...chefWithoutPassword } = chef;
+
+    res.json(chefWithoutPassword);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Errore durante il recupero del profilo" });
+  }
+};
+
+module.exports = { getAllChefs, createChef, getMe };
