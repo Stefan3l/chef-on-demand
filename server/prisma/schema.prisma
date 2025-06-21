@@ -12,9 +12,9 @@ model Chef {
     first_name            String
     last_name             String
     bio                   String?
-    phone                 String
+    phone                 String?
     profileImage          String?
-    previewUrl            String       @unique
+    previewUrl            String?       @unique
     email                 String       @unique
     password              String
    
