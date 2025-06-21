@@ -96,8 +96,16 @@ const getMe = async (req, res) => {
 
 // funzione per aggiornare il profilo del cuoco autenticato
 const updateChef = async (req, res) => {
-  const { first_name, last_name, email, phone, bio, profileImage, previewUrl } =
-    req.body;
+  const {
+    first_name,
+    last_name,
+    email,
+    phone,
+    bio,
+    profileImage,
+    previewUrl,
+    password,
+  } = req.body;
 
   // controllo se la email modificata esiste già
   if (email) {
@@ -110,20 +118,35 @@ const updateChef = async (req, res) => {
   }
 
   try {
+    // definisce i dati da aggiornare
+    const updateData = {
+      first_name,
+      last_name,
+      bio,
+      email,
+      phone,
+      profileImage,
+      previewUrl,
+    };
+    // Se la password è stata fornita, esegui l'hashing
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    }
+
+    // Aggiorna il cuoco nel database
     const updateChef = await prisma.chef.update({
       where: { id: req.user.id },
-      data: {
-        first_name,
-        last_name,
-        bio,
-        email,
-        phone,
-        profileImage,
-        previewUrl,
-      },
+      data: updateData,
     });
 
-    res.json({ message: "Profilo aggiornato con successo", chef: updateChef });
+    // Non restituire la password nel response
+    const { password: _, ...chefWithoutPassword } = updateChef;
+
+    res.json({
+      message: "Profilo aggiornato con successo",
+      chef: chefWithoutPassword,
+    });
   } catch (error) {
     console.error(error);
     res
