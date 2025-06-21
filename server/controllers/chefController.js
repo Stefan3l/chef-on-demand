@@ -58,6 +58,11 @@ const updateChef = async (req, res) => {
     profileImage,
     previewUrl,
     password,
+    city,
+    latitude,
+    longitude,
+    radius_km,
+    language,
   } = req.body;
 
   // controllo se la email modificata esiste già
@@ -80,6 +85,11 @@ const updateChef = async (req, res) => {
       phone,
       profileImage,
       previewUrl,
+      city,
+      latitude,
+      longitude,
+      radius_km,
+      language,
     };
     // Se la password è stata fornita, esegui l'hashing
     if (password) {
@@ -138,6 +148,11 @@ const getChefByPreviewUrl = async (req, res) => {
         email: true,
         profileImage: true,
         previewUrl: true,
+        city: true,
+        latitude: true,
+        longitude: true,
+        radius_km: true,
+        language: true,
         dishImages: {
           select: {
             id: true,

@@ -18,6 +18,11 @@ model Chef {
     email                 String       @unique
     password              String
     resetToken            String? 
+    city                  String?
+    latitude              Float?
+    longitude             Float?
+    radius_km             Int?
+    language              String?
     resetTokenExpiry      DateTime?
 
 

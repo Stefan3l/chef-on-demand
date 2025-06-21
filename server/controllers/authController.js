@@ -58,6 +58,11 @@ const createChef = async (req, res) => {
       bio,
       profileImage,
       previewUrl,
+      city,
+      latitude,
+      longitude,
+      radius_km,
+      language,
     } = req.body;
 
     // Controlla se i campi obbligatori sono presenti
@@ -74,18 +79,23 @@ const createChef = async (req, res) => {
     }
 
     // password hashing
-    const hasheadPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newChef = await prisma.chef.create({
       data: {
         first_name,
         last_name,
         email,
-        password: hasheadPassword,
+        password: hashedPassword,
         phone,
         bio,
         profileImage,
         previewUrl,
+        city,
+        latitude,
+        longitude,
+        radius_km,
+        language,
       },
     });
 
