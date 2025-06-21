@@ -1,0 +1,35 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url = env("DATABASE_URL")
+}
+
+model Chef {
+    id                    Int          @id @default(autoincrement())
+    first_name            String
+    last_name             String
+    bio                   String?
+    phone                 String
+    profileImage          String?
+    previewUrl            String       @unique
+    email                 String       @unique
+    password              String
+   
+
+    dishImages            DishImage[]
+
+    createdAt             DateTime     @default(now())
+}
+
+model DishImage {
+    id                    Int          @id @default(autoincrement())
+    url                   String
+    chef                  Chef         @relation(fields: [chefId], references: [id])
+    chefId                Int
+    caption               String? 
+    createdAt             DateTime     @default(now())
+}
+
