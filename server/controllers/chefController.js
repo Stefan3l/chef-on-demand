@@ -23,73 +23,6 @@ const getAllChefs = async (req, res) => {
   }
 };
 
-// funzione per creare un nuovo cuoco
-const createChef = async (req, res) => {
-  try {
-    const {
-      first_name,
-      last_name,
-      email,
-      password,
-      phone,
-      bio,
-      profileImage,
-      previewUrl,
-    } = req.body;
-
-    // Controlla se i campi obbligatori sono presenti
-    if (!first_name || !email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Nome, cognome, email e password sono obbligatori" });
-    }
-
-    // Controlla se l'email esiste già
-    const existingChef = await prisma.chef.findUnique({ where: { email } });
-    if (existingChef) {
-      return res.status(400).json({ error: "Email esistente" });
-    }
-
-    // password hashing
-    const hasheadPassword = await bcrypt.hash(password, 10);
-
-    const newChef = await prisma.chef.create({
-      data: {
-        first_name,
-        last_name,
-        email,
-        password: hasheadPassword,
-        phone,
-        bio,
-        profileImage,
-        previewUrl,
-      },
-    });
-
-    // Non restituire la password nel response
-    const { password: _, ...chefWithoutPassword } = newChef;
-
-    // generazione del token JWT
-    const token = jwt.sign(
-      {
-        id: newChef.id,
-        email: newChef.email,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "2h" }
-    );
-
-    res.status(201).json({
-      message: "Cuoco creato con successo",
-      token,
-      chef: chefWithoutPassword,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Richiesta non riuscita" });
-  }
-};
-
 // funzione per ottenere il profilo del cuoco autenticato
 const getMe = async (req, res) => {
   try {
@@ -190,4 +123,4 @@ const deleteChef = async (req, res) => {
   }
 };
 
-module.exports = { getAllChefs, createChef, getMe, updateChef, deleteChef };
+module.exports = { getAllChefs, getMe, updateChef, deleteChef };
