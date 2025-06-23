@@ -1,26 +1,38 @@
+import { useState } from "react";
+import { Menu } from "lucide-react";
+
+//import components
+import Logo from "./logo/Logo";
+import NavBar from "./header/NavBar";
+import AccessPanel from "./header/AccessPanel";
+import MobileMenu from "./Mobile/MobileMenu";
+
 export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <header className="bg-blue-600 text-white p-4">
-      <h1 className="text-2xl font-bold">My Application</h1>
-      <nav className="mt-2">
-        <ul className="flex space-x-4">
-          <li>
-            <a href="/" className="hover:underline">
-              Home
-            </a>
-          </li>
-          <li>
-            <a href="/about" className="hover:underline">
-              About
-            </a>
-          </li>
-          <li>
-            <a href="/contact" className="hover:underline">
-              Contact
-            </a>
-          </li>
-        </ul>
-      </nav>
+    <header className="bg-[#FFFFFF] text-[#182427] p-4">
+      <div className="flex items-center justify-between">
+        <Logo />
+
+        {/* Buton hamburger vizibil doar pe mobil */}
+        <button
+          className="flex flex-col gap-2 lg:hidden text-[#182427] cursor-pointer"
+          onClick={() => setMenuOpen(true)}
+        >
+          <span className="w-8 h-0.5 bg-[#182427] rounded-sm"></span>
+          <span className="w-8 h-1 bg-[#182427] rounded-sm"></span>
+        </button>
+
+        {/* NavBar și AccessPanel doar pe desktop */}
+        <div className="hidden lg:flex items-center gap-6">
+          <NavBar />
+          <AccessPanel />
+        </div>
+      </div>
+
+      {/* MobileMenu */}
+      <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
     </header>
   );
 }
