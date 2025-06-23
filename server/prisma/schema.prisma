@@ -26,12 +26,13 @@ model Chef {
     resetTokenExpiry      DateTime?
 
 
-    dishImages            DishImage[]
+    dish          Dish[]
+    menus         Menu[]
 
     createdAt             DateTime     @default(now())
 }
 
-model DishImage {
+model Dish {
     id                    Int          @id @default(autoincrement())
     url                   String
     caption               String? 
@@ -41,6 +42,8 @@ model DishImage {
     chef                  Chef         @relation(fields: [chefId], references: [id])
     chefId                Int
     createdAt             DateTime     @default(now())
+
+    menuItems             MenuDish[]
 }
 
 model PasswordResetToken {
@@ -49,6 +52,33 @@ model PasswordResetToken {
   email                   String
   expiresAt               DateTime
   createdAt               DateTime     @default(now())
+}
+
+model Menu {
+    id                    Int          @id @default(autoincrement())
+    name                  String       
+    description           String?
+    pricePerPerson        Float
+    minGuests             Int
+    maxGuests             Int
+    createdAt             DateTime     @default(now())
+
+    chefId                Int
+    chef                  Chef         @relation(fields: [chefId], references: [id])
+
+    dishes                MenuDish[]
+}
+
+model MenuDish {
+    id                    Int          @id @default(autoincrement())
+    menuId                Int
+    dishId                Int
+    order                 Int
+
+    menu                  Menu         @relation(fields: [menuId], references: [id])
+    dish                  Dish         @relation(fields: [dishId], references: [id])
+
+    @@unique([menuId, dishId])
 }
 
 

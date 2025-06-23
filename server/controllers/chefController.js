@@ -9,7 +9,7 @@ const getAllChefs = async (req, res) => {
   try {
     const chefs = await prisma.chef.findMany({
       include: {
-        dishImages: true,
+        dish: true,
       },
     });
 
@@ -29,7 +29,7 @@ const getMe = async (req, res) => {
     const chef = await prisma.chef.findUnique({
       where: { id: req.user.id },
       include: {
-        dishImages: true,
+        dish: true,
       },
     });
 
@@ -153,7 +153,7 @@ const getChefByPreviewUrl = async (req, res) => {
         longitude: true,
         radius_km: true,
         language: true,
-        dishImages: {
+        dish: {
           select: {
             id: true,
             url: true,

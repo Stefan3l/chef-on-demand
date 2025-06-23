@@ -4,13 +4,15 @@ require("dotenv").config();
 const cors = require("cors");
 const chefRoutes = require("./routers/chefRoutes");
 const authRoutes = require("./routers/authRoutes");
-const dishImageRoutes = require("./routers/dishImageRoute");
+const dishRoutes = require("./routers/dishRoute");
+const menuRoutes = require("./routers/menuRoute");
 
 app.use(cors());
 app.use(express.json());
 app.use("/api/chefs", chefRoutes);
 app.use("/api", authRoutes);
-app.use("/api", dishImageRoutes);
+app.use("/api", dishRoutes);
+app.use("/api", menuRoutes);
 
 // cors middleware
 
