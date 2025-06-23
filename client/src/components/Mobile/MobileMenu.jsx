@@ -47,7 +47,7 @@ export default function MobileMenu({ isOpen, onClose }) {
               Contact us
             </a>
             <a className="hover:text-white" href="#">
-              Explore More{" "}
+              Explore More
             </a>
           </nav>
 

@@ -1,7 +1,7 @@
 // import components
-import Button from "../buttons/Button";
+import Button from "./buttons/Button";
 
-export default function Hero({
+export default function Banner({
   title,
   buttonText,
   onButtonClick,
@@ -28,7 +28,7 @@ export default function Hero({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-center">
         <div className="flex flex-col items-center gap-10">
           <h1 className="text-2xl lg:text-4xl font-semibold">{title}</h1>
-          <Button className="py-4" variant="yellow" onClick={onButtonClick}>
+          <Button className="py-4" variant="white" onClick={onButtonClick}>
             {buttonText}
           </Button>
         </div>
