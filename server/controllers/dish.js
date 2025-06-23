@@ -1,23 +1,29 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const fs = require("fs");
+const path = require("path");
 
 // funzione per caricare l'immagine di un piatto
 const uploadDishImage = async (req, res) => {
   try {
-    const { url, caption, category, price } = req.body;
+    const { caption, category, price } = req.body;
 
-    if (!url || !caption || !category || price === undefined) {
-      return res.status(400).json({ error: "URL dell'immagine richiesta" });
+    if (!req.file || !category || price === undefined) {
+      return res
+        .status(400)
+        .json({ error: "Immagine, categoria e prezzo sono obbligatori" });
     }
+
+    const imagePath = req.file.path;
 
     // funzione per newImage
     const newImage = await prisma.dish.create({
       data: {
-        url,
+        url: imagePath, // salviamo il path dell'immagine
         caption,
         category,
         price: parseFloat(price),
-        chefId: req.user.id, // Id preso dal token JWT
+        chefId: req.user.id,
       },
     });
 
@@ -33,13 +39,13 @@ const uploadDishImage = async (req, res) => {
   }
 };
 
-//funzione per modificare un'immagine di un piatto
+// funzione per modificare un'immagine di un piatto
 const updateDishImage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { url, caption, category, price } = req.body;
+    const { caption, category, price } = req.body;
 
-    if (!url && !caption && !category && price === undefined) {
+    if (!req.file && !caption && !category && price === undefined) {
       return res
         .status(400)
         .json({ error: "Devi fornire almeno un campo da aggiornare" });
@@ -49,18 +55,29 @@ const updateDishImage = async (req, res) => {
       where: { id: parseInt(id) },
     });
 
-    // controllo se l'immagine appartiene al cuoco che sta facendo la richiesta
+    // controllo se l'immagine esiste
     if (!existingImage) {
       return res
         .status(404)
-        .json({ error: "Non puoi modificare questa imagine" });
+        .json({ error: "Non puoi modificare questa immagine" });
     }
 
-    // aggiorno l'imagine o il caption
-    const updateImage = await prisma.dish.update({
+    // controllo se l'immagine appartiene al cuoco autenticato
+    if (existingImage.chefId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Non hai il permesso di modificare questa immagine" });
+    }
+
+    // se c'è un nuovo file, cancella il vecchio
+    if (req.file && fs.existsSync(existingImage.url)) {
+      fs.unlinkSync(path.resolve(existingImage.url));
+    }
+
+    const updatedImage = await prisma.dish.update({
       where: { id: parseInt(id) },
       data: {
-        url: url || existingImage.url,
+        url: req.file ? req.file.path : existingImage.url,
         caption: caption || existingImage.caption,
         category: category || existingImage.category,
         price: price !== undefined ? parseFloat(price) : existingImage.price,
@@ -69,7 +86,7 @@ const updateDishImage = async (req, res) => {
 
     res.status(200).json({
       message: "Immagine del piatto aggiornata con successo",
-      image: updateImage,
+      image: updatedImage,
     });
   } catch (error) {
     console.error(error);
@@ -79,7 +96,7 @@ const updateDishImage = async (req, res) => {
   }
 };
 
-//funzione per eliminare un'immagine di un piatto
+// funzione per eliminare un'immagine di un piatto
 const deleteDishImage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,7 +106,7 @@ const deleteDishImage = async (req, res) => {
     });
 
     if (!image) {
-      return res.statut(404).json({ error: "Immagine non trovata" });
+      return res.status(404).json({ error: "Immagine non trovata" });
     }
 
     // controllo se l'immagine appartiene al cuoco che sta facendo la richiesta
@@ -97,6 +114,11 @@ const deleteDishImage = async (req, res) => {
       return res
         .status(403)
         .json({ error: "Non puoi eliminare questa immagine" });
+    }
+
+    // elimina il file dal disco se esiste
+    if (image.url && fs.existsSync(image.url)) {
+      fs.unlinkSync(path.resolve(image.url));
     }
 
     await prisma.dish.delete({

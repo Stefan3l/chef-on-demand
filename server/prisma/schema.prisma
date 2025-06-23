@@ -28,6 +28,7 @@ model Chef {
 
     dish          Dish[]
     menus         Menu[]
+    messages      Message[]
 
     createdAt             DateTime     @default(now())
 }
@@ -80,5 +81,19 @@ model MenuDish {
 
     @@unique([menuId, dishId])
 }
+
+model Message {
+  id                      Int          @id @default(autoincrement())
+  fromName                String
+  fromEmail               String
+  content                 String
+  fromChef                Boolean      @default(false)
+  isRead                  Boolean      @default(false)
+  createdAt               DateTime     @default(now())
+
+  chefId                  Int
+  chef                    Chef         @relation(fields: [chefId], references: [id])
+}
+
 
 

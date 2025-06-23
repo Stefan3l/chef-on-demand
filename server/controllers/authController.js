@@ -56,7 +56,6 @@ const createChef = async (req, res) => {
       password,
       phone,
       bio,
-      profileImage,
       previewUrl,
       city,
       latitude,
@@ -81,6 +80,8 @@ const createChef = async (req, res) => {
     // password hashing
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const profileImage = req.file ? req.file.path : null; // Percorso dell'immagine del profilo
+
     const newChef = await prisma.chef.create({
       data: {
         first_name,
@@ -92,9 +93,9 @@ const createChef = async (req, res) => {
         profileImage,
         previewUrl,
         city,
-        latitude,
-        longitude,
-        radius_km,
+        latitude: latitude ? parseFloat(latitude) : null, // Converti in float se presente
+        longitude: longitude ? parseFloat(longitude) : null,
+        radius_km: radius_km ? parseInt(radius_km) : null,
         language,
       },
     });

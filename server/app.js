@@ -2,10 +2,14 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 const cors = require("cors");
+const path = require("path");
+
+// Importing routers
 const chefRoutes = require("./routers/chefRoutes");
 const authRoutes = require("./routers/authRoutes");
 const dishRoutes = require("./routers/dishRoute");
 const menuRoutes = require("./routers/menuRoute");
+const messageRoutes = require("./routers/messageRoutes");
 
 app.use(cors());
 app.use(express.json());
@@ -13,6 +17,8 @@ app.use("/api/chefs", chefRoutes);
 app.use("/api", authRoutes);
 app.use("/api", dishRoutes);
 app.use("/api", menuRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Server static per uploads
 
 // cors middleware
 

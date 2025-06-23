@@ -2,6 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
 
 // funzione per ottenere tutti i cuochi
 const getAllChefs = async (req, res) => {
@@ -55,7 +57,6 @@ const updateChef = async (req, res) => {
     email,
     phone,
     bio,
-    profileImage,
     previewUrl,
     password,
     city,
@@ -83,14 +84,19 @@ const updateChef = async (req, res) => {
       bio,
       email,
       phone,
-      profileImage,
       previewUrl,
       city,
-      latitude,
-      longitude,
-      radius_km,
+      latitude: latitude ? parseFloat(latitude) : undefined,
+      longitude: longitude ? parseFloat(longitude) : undefined,
+      radius_km: radius_km ? parseInt(radius_km) : undefined,
       language,
     };
+
+    // Se è stata caricata una nuova immagine del profilo
+    if (req.file) {
+      updateData.profileImage = req.file.path;
+    }
+
     // Se la password è stata fornita, esegui l'hashing
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -121,9 +127,21 @@ const updateChef = async (req, res) => {
 // funzione per eliminare un cuoco
 const deleteChef = async (req, res) => {
   try {
+    // Trova il cuoco prima di eliminarlo (per recuperare l'immagine)
+    const chef = await prisma.chef.findUnique({
+      where: { id: req.user.id },
+    });
+
+    // Se esiste un'immagine di profilo, la cancelliamo dal disco
+    if (chef?.profileImage && fs.existsSync(chef.profileImage)) {
+      fs.unlinkSync(path.resolve(chef.profileImage));
+    }
+
+    // Elimina il cuoco dal database
     await prisma.chef.delete({
       where: { id: req.user.id },
     });
+
     res.json({ message: "Chef eliminato con successo" });
   } catch (error) {
     console.error(error);

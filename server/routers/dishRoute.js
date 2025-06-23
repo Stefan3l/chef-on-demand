@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("../middlewares/upload");
 
 const {
   uploadDishImage,
@@ -10,9 +11,14 @@ const {
 const verifyToken = require("../middlewares/verifyToken");
 
 // Definisce la rotta per caricare l'immagine di un piatto
-router.post("/dishes/upload", verifyToken, uploadDishImage);
+router.post(
+  "/dishes/upload",
+  upload.single("image"),
+  verifyToken,
+  uploadDishImage
+);
 // Definisce la rotta per aggiornare un'immagine di un piatto
-router.put("/dishes/:id", verifyToken, updateDishImage);
+router.put("/dishes/:id", upload.single("image"), verifyToken, updateDishImage);
 // Definisce la rotta per eliminare un'immagine di un piatto
 router.delete("/dishes/:id", verifyToken, deleteDishImage);
 // Definisce la rotta per ottenere tutti i piatti con filtri
