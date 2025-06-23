@@ -9,7 +9,7 @@ const {
 } = require("../controllers/authController");
 
 router.post("/login", loginChef);
-router.post("/", upload.single("profileImage"), createChef);
+router.post("/chefs", upload.single("profileImage"), createChef);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 module.exports = router;

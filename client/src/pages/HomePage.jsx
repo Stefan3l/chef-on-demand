@@ -1,9 +1,13 @@
+import { useState } from "react";
+
 // import components
 import Hero from "../components/hero/Hero";
 import GalleryChefs from "../components/GalleryChefs";
 import Banner from "../components/Banner";
+import RegisterForm from "../components/RegisterForm";
 
 export default function HomePage() {
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
   return (
     <>
       <Hero
@@ -11,6 +15,7 @@ export default function HomePage() {
         buttonText="Join Take a Chef"
         imageDesktop="/images/hero.webp"
         imageMobile="/images/hero-mobile.webp"
+        onRegisterClick={() => setShowRegisterForm(true)}
       />
       <GalleryChefs />
       <div className="lg:mt-36">
@@ -22,6 +27,10 @@ export default function HomePage() {
           onButtonClick={() => (window.location.href = "/signup")}
         />
       </div>
+      <RegisterForm
+        isOpen={showRegisterForm}
+        onClose={() => setShowRegisterForm(false)}
+      />
     </>
   );
 }
