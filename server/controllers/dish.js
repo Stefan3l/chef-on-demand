@@ -8,10 +8,8 @@ const uploadDishImage = async (req, res) => {
   try {
     const { caption, category, price } = req.body;
 
-    if (!req.file || !category || price === undefined) {
-      return res
-        .status(400)
-        .json({ error: "Immagine, categoria e prezzo sono obbligatori" });
+    if (!req.file) {
+      return res.status(400).json({ error: "Immagine obbligatoria" });
     }
 
     const imagePath = req.file.path;
@@ -19,10 +17,10 @@ const uploadDishImage = async (req, res) => {
     // funzione per newImage
     const newImage = await prisma.dish.create({
       data: {
-        url: imagePath, // salviamo il path dell'immagine
-        caption,
-        category,
-        price: parseFloat(price),
+        url: imagePath,
+        caption: caption || "",
+        category: category || "Altro",
+        price: parseFloat(price) || 0,
         chefId: req.user.id,
       },
     });
