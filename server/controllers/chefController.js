@@ -103,6 +103,11 @@ const updateChef = async (req, res) => {
       updateData.password = hashedPassword;
     }
 
+    // Se la lingua è un array, uniscila in una stringa
+    if (Array.isArray(language)) {
+      updateData.language = language.join(",");
+    }
+
     // Aggiorna il cuoco nel database
     const updateChef = await prisma.chef.update({
       where: { id: req.user.id },

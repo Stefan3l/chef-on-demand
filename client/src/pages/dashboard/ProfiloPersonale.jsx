@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export default function ProfiloPersonale() {
   const [bio, setBio] = useState("");
-  const [languages, setLanguages] = useState([]);
+  const [language, setLanguages] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -26,7 +26,7 @@ export default function ProfiloPersonale() {
         "http://localhost:3000/api/chefs/me",
         {
           bio,
-          languages,
+          language,
         },
         {
           headers: {
@@ -39,7 +39,7 @@ export default function ProfiloPersonale() {
       setBio("");
       setLanguages([]);
 
-      // Șterge mesajele după 3 secunde
+      // cancella i messaggi dopo 2 secondi
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
@@ -47,7 +47,7 @@ export default function ProfiloPersonale() {
     } catch (err) {
       console.error("Errore:", err.response?.data || err.message);
       setErrorMessage("Si è verificato un errore.");
-      setTimeout(() => setErrorMessage(""), 3000);
+      setTimeout(() => setErrorMessage(""), 2000);
     }
   };
 
@@ -83,7 +83,7 @@ export default function ProfiloPersonale() {
                   type="checkbox"
                   id={lang}
                   name={lang}
-                  checked={languages.includes(lang)}
+                  checked={language.includes(lang)}
                   onChange={handleLanguageChange}
                 />
                 <label htmlFor={lang} className="capitalize">

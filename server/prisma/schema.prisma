@@ -21,8 +21,8 @@ model Chef {
     city                  String?
     latitude              Float?
     longitude             Float?
-    radius_km             Int?
-    language              String?[]
+    radiusKm              Int?
+    language              String?
     resetTokenExpiry      DateTime?
 
 
