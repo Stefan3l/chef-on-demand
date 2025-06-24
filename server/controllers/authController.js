@@ -56,32 +56,49 @@ const createChef = async (req, res) => {
       password,
       phone,
       bio,
-      previewUrl,
       city,
       latitude,
       longitude,
-      radius_km,
+      radiusKm,
       language,
     } = req.body;
 
-    // Controlla se i campi obbligatori sono presenti
-    if (!first_name || !email || !password) {
+    // Verifica campi obbligatori
+    if (!first_name || !last_name || !email || !password) {
       return res
         .status(400)
         .json({ error: "Nome, cognome, email e password sono obbligatori" });
     }
 
-    // Controlla se l'email esiste già
+    // Controlla se esiste già la email
     const existingChef = await prisma.chef.findUnique({ where: { email } });
     if (existingChef) {
-      return res.status(400).json({ error: "Email esistente" });
+      return res.status(400).json({ error: "Email già esistente" });
     }
 
-    // password hashing
+    // Hash della password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const profileImage = req.file ? req.file.path : null; // Percorso dell'immagine del profilo
+    const profileImage = req.file ? req.file.path : null;
 
+    // Generazione automatica previewUrl univoco
+    const generateSlug = (first, last) =>
+      `${first}-${last}`.toLowerCase().replace(/\s+/g, "-");
+
+    let previewBase = generateSlug(first_name, last_name);
+    let previewUrl = previewBase;
+    let counter = 1;
+
+    while (
+      await prisma.chef.findUnique({
+        where: { previewUrl },
+      })
+    ) {
+      previewUrl = `${previewBase}-${counter}`;
+      counter++;
+    }
+
+    // Creazione del nuovo chef
     const newChef = await prisma.chef.create({
       data: {
         first_name,
@@ -93,17 +110,17 @@ const createChef = async (req, res) => {
         profileImage,
         previewUrl,
         city,
-        latitude: latitude ? parseFloat(latitude) : null, // Converti in float se presente
+        latitude: latitude ? parseFloat(latitude) : null,
         longitude: longitude ? parseFloat(longitude) : null,
-        radius_km: radius_km ? parseInt(radius_km) : null,
+        radiusKm: radiusKm ? parseInt(radiusKm) : null, // <-- attenzione la chiave corretta in Prisma
         language,
       },
     });
 
-    // Non restituire la password nel response
+    // Rimuove la password dal risultato
     const { password: _, ...chefWithoutPassword } = newChef;
 
-    // generazione del token JWT
+    // Genera token JWT
     const token = jwt.sign(
       {
         id: newChef.id,
@@ -113,13 +130,14 @@ const createChef = async (req, res) => {
       { expiresIn: "2h" }
     );
 
+    // Risposta finale
     res.status(201).json({
       message: "Cuoco creato con successo",
       token,
       chef: chefWithoutPassword,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Errore nella creazione del cuoco:", error);
     res.status(500).json({ error: "Richiesta non riuscita" });
   }
 };

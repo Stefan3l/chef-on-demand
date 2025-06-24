@@ -9,8 +9,8 @@ export default function RegisterForm({ isOpen, onClose }) {
     first_name: "",
     last_name: "",
     email: "",
+    confirm_email: "",
     password: "",
-    confirm_password: "",
     phone: "",
   });
 
@@ -25,7 +25,7 @@ export default function RegisterForm({ isOpen, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (form.email !== form.email) {
+    if (form.email !== form.confirm_email) {
       setError("L'email non corrisponde");
       return;
     }

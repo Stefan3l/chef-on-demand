@@ -62,7 +62,7 @@ const updateChef = async (req, res) => {
     city,
     latitude,
     longitude,
-    radius_km,
+    radiusKm,
     language,
   } = req.body;
 
@@ -88,7 +88,8 @@ const updateChef = async (req, res) => {
       city,
       latitude: latitude ? parseFloat(latitude) : undefined,
       longitude: longitude ? parseFloat(longitude) : undefined,
-      radius_km: radius_km ? parseInt(radius_km) : undefined,
+      radiusKm: radiusKm !== undefined ? parseInt(radiusKm) : undefined,
+
       language,
     };
 
@@ -174,7 +175,7 @@ const getChefByPreviewUrl = async (req, res) => {
         city: true,
         latitude: true,
         longitude: true,
-        radius_km: true,
+        radiusKm: true,
         language: true,
         dish: {
           select: {

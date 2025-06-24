@@ -12,6 +12,7 @@ import ProfiloPersonale from "./pages/dashboard/ProfiloPersonale.jsx";
 // import protected route
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Foto from "./pages/dashboard/Foto.jsx";
+import Position from "./pages/dashboard/Position.jsx";
 
 export default function App() {
   return (
@@ -43,6 +44,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Foto />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="position"
+            element={
+              <ProtectedRoute>
+                <Position />
               </ProtectedRoute>
             }
           />

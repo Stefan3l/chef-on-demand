@@ -45,7 +45,7 @@ export default function Sidebar() {
               Profilo Personale
             </NavLink>
             <NavLink to={`/chefs/${id}/foto`}>Foto</NavLink>
-            <NavLink to="#">Dove sei?</NavLink>
+            <NavLink to={`/chefs/${id}/position`}>Dove sei?</NavLink>
             <NavLink to="#">Coordinate Bancarie</NavLink>
           </div>
         )}
