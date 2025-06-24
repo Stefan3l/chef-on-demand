@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 
-export default function Profilo() {
+export default function ProfiloPersonale() {
   const [bio, setBio] = useState("");
   const [languages, setLanguages] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");

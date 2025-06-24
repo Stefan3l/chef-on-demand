@@ -9,7 +9,13 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-white shadow-lg p-4 flex flex-col border-r border-gray-200 text-sm">
       <div className="mb-6">
-        <img src="/images/logo.webp" alt="Logo" className="w-44 h-14 mb-6" />
+        <NavLink to={`/chefs/${id}/dashboard`}>
+          <img
+            src="/images/logo.webp"
+            alt="Logo"
+            className="w-44 h-14 mb-6 cursor-pointer"
+          />
+        </NavLink>
       </div>
 
       <nav className="flex flex-col gap-3 text-lg text-gray-700">
@@ -35,8 +41,10 @@ export default function Sidebar() {
         </button>
         {openProfilo && (
           <div className=" flex flex-col gap-1 mt-1 text-gray-600">
-            <NavLink to={`/chefs/${id}/profilo`}>Profilo Personale</NavLink>
-            <NavLink to="#">Foto</NavLink>
+            <NavLink to={`/chefs/${id}/profilo-personale`}>
+              Profilo Personale
+            </NavLink>
+            <NavLink to={`/chefs/${id}/foto`}>Foto</NavLink>
             <NavLink to="#">Dove sei?</NavLink>
             <NavLink to="#">Coordinate Bancarie</NavLink>
           </div>

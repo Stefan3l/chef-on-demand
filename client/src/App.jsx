@@ -7,10 +7,11 @@ import DashboardLayout from "./layouts/DashboardLayout.jsx";
 // import pages
 import HomePage from "./pages/HomePage.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import Profilo from "./pages/dashboard/Profilo.jsx";
+import ProfiloPersonale from "./pages/dashboard/ProfiloPersonale.jsx";
 
 // import protected route
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Foto from "./pages/dashboard/Foto.jsx";
 
 export default function App() {
   return (
@@ -30,10 +31,18 @@ export default function App() {
             }
           />
           <Route
-            path="profilo"
+            path="profilo-personale"
             element={
               <ProtectedRoute>
-                <Profilo />
+                <ProfiloPersonale />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="foto"
+            element={
+              <ProtectedRoute>
+                <Foto />
               </ProtectedRoute>
             }
           />
