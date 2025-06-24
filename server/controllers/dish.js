@@ -69,7 +69,11 @@ const updateDishImage = async (req, res) => {
 
     // se c'è un nuovo file, cancella il vecchio
     if (req.file && fs.existsSync(existingImage.url)) {
-      fs.unlinkSync(path.resolve(existingImage.url));
+      try {
+        fs.unlinkSync(path.resolve(existingImage.url));
+      } catch (err) {
+        console.warn("Errore rimuovendo immagine vecchia:", err);
+      }
     }
 
     const updatedImage = await prisma.dish.update({
@@ -78,7 +82,8 @@ const updateDishImage = async (req, res) => {
         url: req.file ? req.file.path : existingImage.url,
         caption: caption || existingImage.caption,
         category: category || existingImage.category,
-        price: price !== undefined ? parseFloat(price) : existingImage.price,
+        price:
+          typeof price === "string" ? parseFloat(price) : existingImage.price,
       },
     });
 

@@ -13,7 +13,7 @@ const verifyToken = require("../middlewares/verifyToken");
 // Definisce la rotta per caricare l'immagine di un piatto
 router.post(
   "/dishes/upload",
-  upload.single("dishImage"),
+  upload.single("image"),
   verifyToken,
   uploadDishImage
 );

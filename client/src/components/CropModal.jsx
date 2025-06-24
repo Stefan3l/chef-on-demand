@@ -18,7 +18,8 @@ export function CropModal({ imageSrc, open, onClose, onSave }) {
     const croppedImage = await getCroppedImg(
       imageSrc,
       croppedAreaPixels,
-      rotation
+      rotation,
+      zoom
     );
     onSave(croppedImage);
     onClose();

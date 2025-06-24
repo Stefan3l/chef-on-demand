@@ -1,8 +1,13 @@
-export const getCroppedImg = (imageSrc, pixelCrop, rotation = 0) => {
+export const getCroppedImg = async (
+  imageSrc,
+  pixelCrop,
+  rotation = 0,
+  zoom = 1
+) => {
   const createImage = (url) =>
     new Promise((resolve, reject) => {
       const image = new Image();
-      image.setAttribute("crossOrigin", "anonymous");
+      image.setAttribute("crossOrigin", "anonymous"); // evita CORS
       image.onload = () => resolve(image);
       image.onerror = (error) => reject(error);
       image.src = url;
@@ -10,40 +15,33 @@ export const getCroppedImg = (imageSrc, pixelCrop, rotation = 0) => {
 
   const getRadianAngle = (degreeValue) => (degreeValue * Math.PI) / 180;
 
-  return new Promise(async (resolve, reject) => {
-    const image = await createImage(imageSrc);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
-    const safeArea = Math.max(image.width, image.height) * 2;
+  const radians = getRadianAngle(rotation);
+  const scale = zoom;
 
-    canvas.width = safeArea;
-    canvas.height = safeArea;
+  const scaledWidth = image.width * scale;
+  const scaledHeight = image.height * scale;
 
-    ctx.translate(safeArea / 2, safeArea / 2);
-    ctx.rotate(getRadianAngle(rotation));
-    ctx.translate(-safeArea / 2, -safeArea / 2);
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
 
-    ctx.drawImage(
-      image,
-      (safeArea - image.width) / 2,
-      (safeArea - image.height) / 2
-    );
+  ctx.translate(-pixelCrop.x, -pixelCrop.y);
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(radians);
+  ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-    const data = ctx.getImageData(0, 0, safeArea, safeArea);
+  ctx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
 
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
-
-    ctx.putImageData(data, Math.round(-pixelCrop.x), Math.round(-pixelCrop.y));
-
+  return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (!blob) {
         reject(new Error("Canvas is empty"));
         return;
       }
-      const file = new File([blob], "cropped.jpeg", { type: "image/jpeg" });
-      resolve(file);
+      resolve(blob);
     }, "image/jpeg");
   });
 };
