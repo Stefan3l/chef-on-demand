@@ -2,7 +2,7 @@
 import LanguageSelect from "./LaguageSelect";
 import Button from "../buttons/Button";
 
-export default function AccessPanel({ isMobile = false }) {
+export default function AccessPanel({ isMobile = false, onLoginClick }) {
   return (
     <div
       className={`${
@@ -11,7 +11,11 @@ export default function AccessPanel({ isMobile = false }) {
           : "hidden lg:flex items-center gap-4"
       }`}
     >
-      <Button isMobile={isMobile} className="bg-[#F0EFEF] text-black">
+      <Button
+        isMobile={isMobile}
+        onClick={onLoginClick}
+        className="bg-[#F0EFEF] text-black"
+      >
         Login
       </Button>
       <Button

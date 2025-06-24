@@ -8,6 +8,7 @@ import RegisterForm from "../components/RegisterForm";
 
 export default function HomePage() {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
+
   return (
     <>
       <Hero

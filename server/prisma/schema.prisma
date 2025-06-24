@@ -22,7 +22,7 @@ model Chef {
     latitude              Float?
     longitude             Float?
     radius_km             Int?
-    language              String?
+    language              String?[]
     resetTokenExpiry      DateTime?
 
 

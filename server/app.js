@@ -20,8 +20,6 @@ app.use("/api", menuRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Server static per uploads
 
-// cors middleware
-
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });

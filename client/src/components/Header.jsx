@@ -7,7 +7,7 @@ import NavBar from "./header/NavBar";
 import AccessPanel from "./header/AccessPanel";
 import MobileMenu from "./Mobile/MobileMenu";
 
-export default function Header() {
+export default function Header({ onLoginClick }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -27,7 +27,7 @@ export default function Header() {
         {/* NavBar și AccessPanel doar pe desktop */}
         <div className="hidden lg:flex items-center gap-6">
           <NavBar />
-          <AccessPanel />
+          <AccessPanel onLoginClick={onLoginClick} />
         </div>
       </div>
 
