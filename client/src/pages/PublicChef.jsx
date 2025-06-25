@@ -1,7 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
+// import components
+import BioChef from "../components/publicChef/BioChef";
 import HeroChef from "../components/hero/HeroChef";
+import MenuChef from "../components/publicChef/MenuChef";
 
 export default function PublicChef() {
   const { previewUrl } = useParams(); // corect
@@ -33,6 +37,8 @@ export default function PublicChef() {
         imageMobile="/images/hero-mobile.webp"
         chefData={chefData}
       />
+      <BioChef chefData={chefData} />
+      <MenuChef />
     </>
   );
 }

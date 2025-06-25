@@ -133,7 +133,7 @@ const updateChef = async (req, res) => {
 
     // Se è stata caricata una nuova immagine del profilo
     if (req.file) {
-      updateData.profileImage = req.file.path;
+      updateData.profileImage = req.file.path.replace(/\\/g, "/");
     }
 
     // Se la password è stata fornita, esegui l'hashing
@@ -177,8 +177,12 @@ const deleteChef = async (req, res) => {
     });
 
     // Se esiste un'immagine di profilo, la cancelliamo dal disco
-    if (chef?.profileImage && fs.existsSync(chef.profileImage)) {
-      fs.unlinkSync(path.resolve(chef.profileImage));
+    const absoluteImagePath = path.resolve(
+      chef.profileImage.replace(/\\/g, "/")
+    );
+
+    if (chef?.profileImage && fs.existsSync(absoluteImagePath)) {
+      fs.unlinkSync(absoluteImagePath);
     }
 
     // Elimina il cuoco dal database
@@ -214,13 +218,14 @@ const getChefByPreviewParam = async (req, res) => {
         first_name: true,
         last_name: true,
         email: true,
+        bio: true,
         profileImage: true,
         previewUrl: true,
         city: true,
         dish: true,
       },
     });
-
+    console.log("Chef găsit:", chef);
     if (!chef) {
       return res.status(404).json({ error: "Chef inexistent" });
     }

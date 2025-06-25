@@ -79,7 +79,7 @@ const createChef = async (req, res) => {
     // Hash della password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const profileImage = req.file ? req.file.path : null;
+    const profileImage = req.file ? req.file.path.replace(/\\/g, "/") : null;
 
     // Generazione automatica previewUrl univoco
     const generateSlug = (first, last) =>

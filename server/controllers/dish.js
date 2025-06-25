@@ -12,7 +12,7 @@ const uploadDishImage = async (req, res) => {
       return res.status(400).json({ error: "Immagine obbligatoria" });
     }
 
-    const imagePath = req.file.path;
+    const imagePath = req.file.path.replace(/\\/g, "/");
 
     // funzione per newImage
     const newImage = await prisma.dish.create({
@@ -79,7 +79,7 @@ const updateDishImage = async (req, res) => {
     const updatedImage = await prisma.dish.update({
       where: { id: parseInt(id) },
       data: {
-        url: req.file ? req.file.path : existingImage.url,
+        url: req.file ? req.file.path.replace(/\\/g, "/") : existingImage.url,
         caption: caption || existingImage.caption,
         category: category || existingImage.category,
         price:
@@ -120,8 +120,12 @@ const deleteDishImage = async (req, res) => {
     }
 
     // elimina il file dal disco se esiste
-    if (image.url && fs.existsSync(image.url)) {
-      fs.unlinkSync(path.resolve(image.url));
+    if (image.url) {
+      const absolutePath = path.resolve(image.url.replace(/\\/g, "/"));
+
+      if (fs.existsSync(absolutePath)) {
+        fs.unlinkSync(absolutePath);
+      }
     }
 
     await prisma.dish.delete({
