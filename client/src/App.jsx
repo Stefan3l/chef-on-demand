@@ -14,6 +14,7 @@ import PublicChef from "./pages/PublicChef.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Foto from "./pages/dashboard/Foto.jsx";
 import Position from "./pages/dashboard/Position.jsx";
+import Messaggi from "./pages/dashboard/Messaggi.jsx";
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="/chefs/preview/:previewUrl" element={<PublicChef />} />
         </Route>
+
+        {/* Route protected */}
 
         <Route path="/chefs/:id" element={<DashboardLayout />}>
           <Route
@@ -54,6 +57,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Position />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="messaggi"
+            element={
+              <ProtectedRoute>
+                <Messaggi />
               </ProtectedRoute>
             }
           />

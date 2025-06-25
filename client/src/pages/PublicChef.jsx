@@ -6,6 +6,8 @@ import { useParams } from "react-router-dom";
 import BioChef from "../components/publicChef/BioChef";
 import HeroChef from "../components/hero/HeroChef";
 import MenuChef from "../components/publicChef/MenuChef";
+import DishGallery from "../components/publicChef/DishGallery";
+import ChatModal from "../components/publicChef/ChatModal";
 
 export default function PublicChef() {
   const { previewUrl } = useParams(); // corect
@@ -30,6 +32,10 @@ export default function PublicChef() {
     return <div className="text-center mt-10">Loading...</div>;
   }
 
+  // Preparo gli URL delle immagini dei piatti
+  const imageUrls =
+    chefData.dish?.map((img) => `http://localhost:3000/${img.url}`) || [];
+
   return (
     <>
       <HeroChef
@@ -39,6 +45,8 @@ export default function PublicChef() {
       />
       <BioChef chefData={chefData} />
       <MenuChef />
+      <DishGallery images={imageUrls} />
+      <ChatModal chefId={chefData.id} />
     </>
   );
 }
