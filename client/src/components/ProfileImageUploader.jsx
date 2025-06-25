@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CropModal } from "./CropModal";
+import CropModal from "./CropModal";
 import axios from "axios";
 
 export default function ProfileImageUploader({ onSuccess, onError }) {
@@ -73,21 +73,19 @@ export default function ProfileImageUploader({ onSuccess, onError }) {
     // TODO: eventual trimite și un request la backend pentru a șterge din DB
   };
 
-  setTimeout(() => {
-    const token = localStorage.getItem("token");
-    axios
-      .get("http://localhost:3000/api/chefs/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        if (res.data?.profileImage) {
-          setExistingImage(
-            `http://localhost:3000/${res.data.profileImage}?t=${Date.now()}`
-          );
-        }
-      })
-      .catch(console.error);
-  }, 500);
+  const token = localStorage.getItem("token");
+  axios
+    .get("http://localhost:3000/api/chefs/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((res) => {
+      if (res.data?.profileImage) {
+        setExistingImage(
+          `http://localhost:3000/${res.data.profileImage}?t=${Date.now()}`
+        );
+      }
+    })
+    .catch(console.error);
 
   return (
     <div className="mb-12 relative">

@@ -1,92 +1,74 @@
-import Cropper from "react-easy-crop";
-import { useCallback, useState } from "react";
-import { getCroppedImg } from "../utils/cropUtils";
-import { ModalImage } from "./ModalImage";
-import { ZoomIn, ZoomOut, RotateCcw, RotateCw, Undo } from "lucide-react";
+import { useRef, useState } from "react";
+import Cropper from "react-cropper";
+import "cropperjs/dist/cropper.min.css";
 
-export function CropModal({ imageSrc, open, onClose, onSave }) {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+export default function CropModal({ imageSrc, open, onClose, onSave }) {
+  const cropperRef = useRef(null);
+  const [loading, setLoading] = useState(true);
 
-  const onCropComplete = useCallback((_, croppedPixels) => {
-    setCroppedAreaPixels(croppedPixels);
-  }, []);
+  const handleSave = () => {
+    const cropper = cropperRef.current?.cropper;
+    if (cropper) {
+      const canvas = cropper.getCroppedCanvas();
+      if (!canvas) return;
 
-  const handleSave = async () => {
-    const croppedImage = await getCroppedImg(
-      imageSrc,
-      croppedAreaPixels,
-      rotation,
-      zoom
-    );
-    onSave(croppedImage);
-    onClose();
+      canvas.toBlob((blob) => {
+        if (blob) {
+          onSave(blob);
+          onClose();
+          setLoading(true); // Resetează loading pt următoarea imagine
+        }
+      }, "image/jpeg");
+    }
   };
 
-  const handleReset = () => {
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setRotation(0);
+  const handleImageLoaded = () => {
+    setLoading(false);
   };
+
+  if (!open) return null;
 
   return (
-    <ModalImage open={open} onClose={onClose}>
-      <h2 className="text-center text-lg font-semibold mb-4">
-        Modifica la foto profilo
-      </h2>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+      <div className="bg-white p-4 rounded-lg w-[90vw] max-w-3xl relative">
+        <h2 className="text-lg font-semibold mb-2">Modifica l'immagine</h2>
 
-      <div className="relative h-[75vh] bg-black">
-        <Cropper
-          image={imageSrc}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          aspect={9 / 16}
-          cropShape="rect"
-          showGrid={true}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCropComplete={onCropComplete}
-        />
-      </div>
+        <div className="relative h-[400px] w-full bg-gray-200">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+              <div className="loader border-4 border-gray-300 border-t-violet-700 rounded-full w-10 h-10 animate-spin" />
+            </div>
+          )}
 
-      {/* TOOLBAR CU ICONIȚE */}
-      <div className="flex justify-center items-center gap-4 mt-4 text-gray-700">
-        <button onClick={() => setZoom((z) => Math.max(1, z - 0.1))}>
-          <ZoomOut className="w-6 h-6 hover:text-black" />
-        </button>
-        <button onClick={() => setZoom((z) => Math.min(3, z + 0.1))}>
-          <ZoomIn className="w-6 h-6 hover:text-black" />
-        </button>
-        <button onClick={() => setRotation((r) => r - 90)}>
-          <RotateCcw className="w-6 h-6 hover:text-black" />
-        </button>
-        <button onClick={() => setRotation((r) => r + 90)}>
-          <RotateCw className="w-6 h-6 hover:text-black" />
-        </button>
-        <button onClick={handleReset}>
-          <Undo className="w-6 h-6 hover:text-black" />
-        </button>
-      </div>
+          <Cropper
+            src={imageSrc}
+            style={{ height: 400, width: "100%" }}
+            guides={true}
+            ref={cropperRef}
+            viewMode={0}
+            background={false}
+            responsive={true}
+            autoCropArea={1}
+            checkOrientation={false}
+            ready={handleImageLoaded}
+          />
+        </div>
 
-      {/* BUTOANE DE FINAL */}
-      <div className="flex justify-between items-center mt-6">
-        <button
-          onClick={onClose}
-          className="text-sm px-4 py-2 text-gray-600 hover:text-black cursor-pointer"
-        >
-          Cancella
-        </button>
-        <button
-          onClick={handleSave}
-          className="bg-violet-700 cursor-pointer hover:bg-violet-600 text-white px-6 py-2 rounded-md text-sm"
-        >
-          Save
-        </button>
+        <div className="flex justify-between mt-4">
+          <button
+            onClick={onClose}
+            className="text-sm text-gray-500 hover:text-black"
+          >
+            Anulează
+          </button>
+          <button
+            onClick={handleSave}
+            className="bg-violet-700 text-white px-6 py-2 rounded hover:bg-violet-600"
+          >
+            Salvează
+          </button>
+        </div>
       </div>
-    </ModalImage>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CropModal } from "./CropModal";
+import CropModal from "./CropModal";
 import axios from "axios";
 
 export default function DishImagesUploader() {
@@ -7,6 +7,7 @@ export default function DishImagesUploader() {
   const [dishImages, setDishImages] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [editDishId, setEditDishId] = useState(null);
+
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
