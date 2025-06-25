@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
+const { get } = require("http");
 
 // funzione per ottenere tutti i cuochi
 const getAllChefs = async (req, res) => {
@@ -195,45 +196,49 @@ const deleteChef = async (req, res) => {
 };
 
 // funzione per avere il previewUrl del profilo del cuoco
-const getChefByPreviewUrl = async (req, res) => {
-  const { previewUrl } = req.params;
+const getChefByPreviewParam = async (req, res) => {
+  const previewUrl = req.params.previewUrl;
+  const idPart = previewUrl.split("-")[0];
+  const slugFromUrl = previewUrl.split("-").slice(1).join("-");
+  const id = Number(idPart);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "ID invalid în previewUrl" });
+  }
 
   try {
     const chef = await prisma.chef.findUnique({
-      where: { previewUrl },
+      where: { id },
       select: {
         id: true,
         first_name: true,
         last_name: true,
-        bio: true,
         email: true,
         profileImage: true,
         previewUrl: true,
         city: true,
-        latitude: true,
-        longitude: true,
-        radiusKm: true,
-        language: true,
-        dish: {
-          select: {
-            id: true,
-            url: true,
-            caption: true,
-            category: true,
-            price: true,
-            createdAt: true,
-          },
-        },
+        dish: true,
       },
     });
+
     if (!chef) {
-      return res.status(404).json({ error: "Chef non trovato" });
+      return res.status(404).json({ error: "Chef inexistent" });
     }
 
-    res.json(chef);
+    if (
+      !chef.previewUrl ||
+      chef.previewUrl.toLowerCase() !== slugFromUrl.toLowerCase()
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Preview URL invalid sau modificat" });
+    }
+
+    const { password, phone, ...safeChef } = chef;
+    res.json(safeChef);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Errore durante il recupero del cuoco" });
+    console.error("Eroare în getChefByPreviewParam:", error);
+    res.status(500).json({ error: "Eroare server" });
   }
 };
 
@@ -242,6 +247,6 @@ module.exports = {
   getMe,
   updateChef,
   deleteChef,
-  getChefByPreviewUrl,
+  getChefByPreviewParam,
   getChefById,
 };
