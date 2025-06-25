@@ -32,6 +32,11 @@ const getMe = async (req, res) => {
       where: { id: req.user.id },
       include: {
         dish: true,
+        menus: {
+          include: {
+            dishes: true,
+          },
+        },
       },
     });
 
@@ -43,6 +48,38 @@ const getMe = async (req, res) => {
     const { password: _, ...chefWithoutPassword } = chef;
 
     res.json(chefWithoutPassword);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Errore durante il recupero del profilo" });
+  }
+};
+
+// funzione per ottenere il profilo del cuoco byID
+const getChefById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const chef = await prisma.chef.findUnique({
+      where: { id: Number(id) },
+      include: {
+        dish: true,
+        menus: {
+          include: {
+            dishes: true,
+          },
+        },
+      },
+    });
+
+    // Controlla se il cuoco esiste
+    if (!chef) {
+      return res.status(404).json({ error: "Chef non trovato" });
+    }
+
+    // Non restituire la password e phone nel response
+    const { password, phone, ...chefWithOutPublic } = chef;
+
+    res.json(chefWithOutPublic);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Errore durante il recupero del profilo" });
@@ -206,4 +243,5 @@ module.exports = {
   updateChef,
   deleteChef,
   getChefByPreviewUrl,
+  getChefById,
 };

@@ -8,6 +8,7 @@ import DashboardLayout from "./layouts/DashboardLayout.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProfiloPersonale from "./pages/dashboard/ProfiloPersonale.jsx";
+import PublicChef from "./pages/PublicChef.jsx";
 
 // import protected route
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -20,6 +21,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<DefaultLayout />}>
           <Route index element={<HomePage />} />
+          <Route path="/chefs/preview/:previewUrl" element={<PublicChef />} />
         </Route>
 
         <Route path="/chefs/:id" element={<DashboardLayout />}>
