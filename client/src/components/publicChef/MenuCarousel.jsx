@@ -85,9 +85,9 @@ export default function MenuCarousel() {
       <div className="relative h-[420px]  lg:h-[520px] flex items-center justify-center overflow-hidden max-w-7xl mx-auto px-4">
         <button
           onClick={prev}
-          className="z-10 absolute left-0 bg-white p-2 rounded-full shadow-xl"
+          className="z-10 absolute left-0 bg-white text-yellow-600 p-2 rounded-full shadow-xl cursor-pointer"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={28} />
         </button>
 
         <div className="relative w-full flex items-center justify-center ">
@@ -144,9 +144,9 @@ export default function MenuCarousel() {
 
         <button
           onClick={next}
-          className="z-10 absolute right-0 bg-white p-2 rounded-full shadow"
+          className="z-10 absolute right-0 bg-white text-yellow-600 p-2 rounded-full shadow-xl cursor-pointer"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={28} />
         </button>
       </div>
 
@@ -155,11 +155,11 @@ export default function MenuCarousel() {
         onClose={() => setOpen(false)}
         className="fixed inset-0 z-50 flex items-center justify-center"
       >
-        <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50" />
+        <div className="fixed inset-0 bg-gray-300/80  bg-opacity-80" />
         <div className="bg-white max-w-xl w-full p-6 rounded-2xl z-50 relative">
           <button
             onClick={() => setOpen(false)}
-            className="absolute top-4 right-4 text-gray-500 hover:text-black"
+            className="absolute top-4 right-4 text-gray-500 hover:text-black cursor-pointer"
           >
             <X size={20} />
           </button>
