@@ -3,99 +3,99 @@ const prisma = new PrismaClient();
 const fs = require("fs");
 const path = require("path");
 
-// funzione per caricare l'immagine di un piatto
+// funzione per caricare un'immagine di un piatto
 const uploadDishImage = async (req, res) => {
   try {
-    const { caption, category, price } = req.body;
+    const { name, category } = req.body;
 
     if (!req.file) {
-      return res.status(400).json({ error: "Immagine obbligatoria" });
+      return res.status(400).json({ error: "Imaginea este obligatorie" });
     }
 
     const imagePath = req.file.path.replace(/\\/g, "/");
 
-    // funzione per newImage
     const newImage = await prisma.dish.create({
       data: {
-        url: imagePath,
-        caption: caption || "",
+        url: imagePath || "",
+        name: name || "",
         category: category || "Altro",
-        price: parseFloat(price) || 0,
         chefId: req.user.id,
       },
     });
 
     res.status(201).json({
-      message: "Immagine del piatto caricata con successo",
+      message: "Imaginea preparatului a fost încărcată cu succes",
       image: newImage,
     });
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ error: "Errore durante il caricamento dell'immagine" });
+      .json({ error: "Eroare la încărcarea imaginii preparatului" });
   }
 };
 
-// funzione per modificare un'immagine di un piatto
+const fs = require("fs");
+const path = require("path");
+
 const updateDishImage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { caption, category, price } = req.body;
+    const { name, category } = req.body;
 
-    if (!req.file && !caption && !category && price === undefined) {
-      return res
-        .status(400)
-        .json({ error: "Devi fornire almeno un campo da aggiornare" });
+    // controllo se possiamo aggiornare qualcosa
+    if (!req.file && !name && !category) {
+      return res.status(400).json({
+        error: "Trebuie să furnizezi cel puțin un câmp de actualizat",
+      });
     }
 
     const existingImage = await prisma.dish.findUnique({
       where: { id: parseInt(id) },
     });
 
-    // controllo se l'immagine esiste
+    // se non ce l'imagine, ritorniamo un errore
     if (!existingImage) {
       return res
         .status(404)
-        .json({ error: "Non puoi modificare questa immagine" });
+        .json({ error: "Nu poți modifica această imagine – nu există" });
     }
 
-    // controllo se l'immagine appartiene al cuoco autenticato
+    // controlliamo se l'immagine appartiene al cuoco che sta facendo la richiesta
     if (existingImage.chefId !== req.user.id) {
       return res
         .status(403)
-        .json({ error: "Non hai il permesso di modificare questa immagine" });
+        .json({ error: "Nu ai permisiunea să modifici această imagine" });
     }
 
-    // se c'è un nuovo file, cancella il vecchio
+    // se e stato caricato un nuovo file cancelliamo l'immagine vecchia
     if (req.file && fs.existsSync(existingImage.url)) {
       try {
         fs.unlinkSync(path.resolve(existingImage.url));
       } catch (err) {
-        console.warn("Errore rimuovendo immagine vecchia:", err);
+        console.warn("Eroare la ștergerea imaginii vechi:", err);
       }
     }
 
+    // actualizăm imaginea în baza de date
     const updatedImage = await prisma.dish.update({
       where: { id: parseInt(id) },
       data: {
         url: req.file ? req.file.path.replace(/\\/g, "/") : existingImage.url,
-        caption: caption || existingImage.caption,
+        name: name || existingImage.name,
         category: category || existingImage.category,
-        price:
-          typeof price === "string" ? parseFloat(price) : existingImage.price,
       },
     });
 
     res.status(200).json({
-      message: "Immagine del piatto aggiornata con successo",
+      message: "Imaginea preparatului a fost actualizată cu succes",
       image: updatedImage,
     });
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ error: "Errore durante l'aggiornamento dell'immagine" });
+      .json({ error: "Eroare la actualizarea imaginii preparatului" });
   }
 };
 
@@ -143,10 +143,10 @@ const deleteDishImage = async (req, res) => {
   }
 };
 
-//funzione per avere tutti piatti e filtrarli per categoria, prezzo, chefId
+// funzione per recuperare tutte le immagini dei piatti
 const getAllDishes = async (req, res) => {
   try {
-    const { category, priceMin, priceMax, sort, chefId } = req.query;
+    const { category, sort, chefId } = req.query;
 
     const filters = {};
 
@@ -158,26 +158,18 @@ const getAllDishes = async (req, res) => {
       filters.chefId = parseInt(chefId);
     }
 
-    if (priceMin || priceMax) {
-      filters.price = {};
-      if (priceMin) {
-        filters.price.gte = parseFloat(priceMin);
-      }
-      if (priceMax) {
-        filters.price.lte = parseFloat(priceMax);
-      }
-    }
-
+    // filtriamo le immagini in base ai parametri di ricerca
     const dishes = await prisma.dish.findMany({
       where: filters,
       orderBy: {
-        price: sort === "desc" ? "desc" : "asc",
+        createdAt: sort === "desc" ? "desc" : "asc",
       },
     });
+
     res.json(dishes);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Errore durante il recupero dei piatti" });
+    res.status(500).json({ error: "Eroare la recuperarea preparatelor" });
   }
 };
 

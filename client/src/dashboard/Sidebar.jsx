@@ -100,7 +100,7 @@ export default function Sidebar() {
         {openProposte && (
           <div className=" flex flex-col gap-1 mt-1 text-gray-600">
             <NavLink to="#">Menu</NavLink>
-            <NavLink to="#">Piatti</NavLink>
+            <NavLink to={`/chefs/${id}/piatti`}>Piatti</NavLink>
           </div>
         )}
         <NavLink to="#">Richiedi Impostazioni</NavLink>

@@ -34,17 +34,17 @@ model Chef {
 }
 
 model Dish {
-    id                    Int          @id @default(autoincrement())
-    url                   String
-    caption               String? 
-    category              String?
-    price                 Float?
+  id         Int         @id @default(autoincrement())
+  url        String?     // opțional
+  name       String?     // opțional (ai zis "Nome")
+  category   String?     // opțional
+  
+  
+  chefId     Int
+  chef       Chef        @relation(fields: [chefId], references: [id])
+  createdAt  DateTime    @default(now())
 
-    chef                  Chef         @relation(fields: [chefId], references: [id])
-    chefId                Int
-    createdAt             DateTime     @default(now())
-
-    menuItems             MenuDish[]
+  menuItems  MenuDish[]
 }
 
 model PasswordResetToken {
@@ -69,6 +69,8 @@ model Menu {
 
     dishes                MenuDish[]
 }
+
+
 
 model MenuDish {
     id                    Int          @id @default(autoincrement())

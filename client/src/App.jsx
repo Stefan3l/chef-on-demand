@@ -15,6 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Foto from "./pages/dashboard/Foto.jsx";
 import Position from "./pages/dashboard/Position.jsx";
 import Messaggi from "./pages/dashboard/Messaggi.jsx";
+import Piatti from "./pages/dashboard/Piatti.jsx";
 
 export default function App() {
   return (
@@ -65,6 +66,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Messaggi />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="piatti"
+            element={
+              <ProtectedRoute>
+                <Piatti />
               </ProtectedRoute>
             }
           />
