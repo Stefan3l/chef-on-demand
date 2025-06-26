@@ -1,3 +1,4 @@
+
 generator client {
     provider = "prisma-client-js"
 }
@@ -24,78 +25,92 @@ model Chef {
     radiusKm              Int?
     language              String?
     resetTokenExpiry      DateTime?
-
-
-    dish          Dish[]
-    menus         Menu[]
-    messages      Message[]
-
     createdAt             DateTime     @default(now())
+
+    dish                  Dish[]
+    menus                 Menu[]
+    messages              Message[]
 }
 
 model Dish {
-  id         Int         @id @default(autoincrement())
-  url        String?     // opțional
-  name       String?     // opțional 
-  category   String?     // opțional
-  
-  
-  chefId     Int
-  chef       Chef        @relation(fields: [chefId], references: [id])
-  createdAt  DateTime    @default(now())
+    id         Int         @id @default(autoincrement())
+    url        String?     // optional
+    name       String?     // optional 
+    category   String?     // optional
+    chefId     Int
+    chef       Chef        @relation(fields: [chefId], references: [id])
+    createdAt  DateTime    @default(now())
 
-  menuItems  MenuDish[]
+    menuItems  MenuDish[]
+    menuLinks  MenuCategoryDish[]
 }
 
 model PasswordResetToken {
-  id                      Int          @id @default(autoincrement())
-  token                   String       @unique
-  email                   String
-  expiresAt               DateTime
-  createdAt               DateTime     @default(now())
+    id          Int       @id @default(autoincrement())
+    token       String    @unique
+    email       String
+    expiresAt   DateTime
+    createdAt   DateTime  @default(now())
 }
 
 model Menu {
-    id                    Int          @id @default(autoincrement())
-    name                  String       
-    description           String?
-    pricePerPerson        Float
-    minGuests             Int
-    maxGuests             Int
-    createdAt             DateTime     @default(now())
+    id             Int              @id @default(autoincrement())
+    name           String       
+    description    String?
+    pricePerPerson Float
+    minGuests      Int
+    maxGuests      Int
+    createdAt      DateTime         @default(now())
 
-    chefId                Int
-    chef                  Chef         @relation(fields: [chefId], references: [id])
+    chefId         Int
+    chef           Chef             @relation(fields: [chefId], references: [id])
 
-    dishes                MenuDish[]
+    categories     MenuCategory[]
+    dishes         MenuDish[]
 }
 
-
-
 model MenuDish {
-    id                    Int          @id @default(autoincrement())
-    menuId                Int
-    dishId                Int
-    order                 Int
+    id        Int   @id @default(autoincrement())
+    menuId    Int
+    dishId    Int
+    order     Int
 
-    menu                  Menu         @relation(fields: [menuId], references: [id])
-    dish                  Dish         @relation(fields: [dishId], references: [id])
+    menu      Menu  @relation(fields: [menuId], references: [id])
+    dish      Dish  @relation(fields: [dishId], references: [id])
 
     @@unique([menuId, dishId])
 }
 
-model Message {
-  id                      Int          @id @default(autoincrement())
-  fromName                String
-  fromEmail               String
-  content                 String
-  fromChef                Boolean      @default(false)
-  isRead                  Boolean      @default(false)
-  createdAt               DateTime     @default(now())
+model MenuCategory {
+    id        Int               @id @default(autoincrement())
+    name      String            // Antipasto, Primo, etc.
+    type      String            // All Inclusive, 1, 2, 3...
+    menuId    Int
+    menu      Menu              @relation(fields: [menuId], references: [id])
 
-  chefId                  Int
-  chef                    Chef         @relation(fields: [chefId], references: [id])
+    dishes    MenuCategoryDish[]
 }
 
+model MenuCategoryDish {
+    id              Int            @id @default(autoincrement())
+    menuCategoryId  Int
+    dishId          Int
 
+    menuCategory    MenuCategory   @relation(fields: [menuCategoryId], references: [id])
+    dish            Dish           @relation(fields: [dishId], references: [id])
 
+    @@unique([menuCategoryId, dishId])
+}
+
+model Message {
+    id          Int       @id @default(autoincrement())
+    fromName    String
+    fromEmail   String
+    content     String
+    fromChef    Boolean    @default(false)
+    isRead      Boolean    @default(false)
+    createdAt   DateTime   @default(now())
+
+    chefId      Int
+    chef        Chef       @relation(fields: [chefId], references: [id])
+}

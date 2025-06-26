@@ -16,6 +16,7 @@ import Foto from "./pages/dashboard/Foto.jsx";
 import Position from "./pages/dashboard/Position.jsx";
 import Messaggi from "./pages/dashboard/Messaggi.jsx";
 import Piatti from "./pages/dashboard/Piatti.jsx";
+import MenuPage from "./pages/dashboard/MenuPage.jsx";
 
 export default function App() {
   return (
@@ -74,6 +75,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Piatti />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="menu"
+            element={
+              <ProtectedRoute>
+                <MenuPage />
               </ProtectedRoute>
             }
           />
