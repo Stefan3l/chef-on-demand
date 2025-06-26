@@ -11,7 +11,13 @@ const dishRoutes = require("./routers/dishRoute");
 const menuRoutes = require("./routers/menuRoute");
 const messageRoutes = require("./routers/messageRoutes");
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use("/api/chefs", chefRoutes);
 app.use("/api", authRoutes);

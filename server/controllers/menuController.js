@@ -1,7 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// funzione per creare un nuovo menu
+// Crea un nuovo menu completo
 const createMenu = async (req, res) => {
   try {
     const {
@@ -10,7 +10,7 @@ const createMenu = async (req, res) => {
       pricePerPerson,
       minGuests,
       maxGuests,
-      categories,
+      categories, // array con: { name: "Antipasto", type: "All Inclusive", dishes: ["Bruschette", "Caprese"] }
     } = req.body;
 
     if (
@@ -18,14 +18,14 @@ const createMenu = async (req, res) => {
       !pricePerPerson ||
       !minGuests ||
       !maxGuests ||
-      !Array.isArray(categories) ||
-      categories.length === 0
+      !Array.isArray(categories)
     ) {
       return res.status(400).json({ error: "Campi obbligatori mancanti" });
     }
 
-    const chefId = req.user.id; // presupunem că autentificarea e făcută
+    const chefId = req.user.id;
 
+    // 1. Creiamo il Menu
     const menu = await prisma.menu.create({
       data: {
         name,
@@ -34,38 +34,33 @@ const createMenu = async (req, res) => {
         minGuests: parseInt(minGuests),
         maxGuests: parseInt(maxGuests),
         chefId,
-        categories: {
-          create: categories.map((cat) => ({
-            name: cat.name,
-            type: cat.type,
-            dishes: {
-              create: cat.dishes.map((dish) => ({
-                dish: {
-                  create: {
-                    name: dish.name,
-                    category: cat.name,
-                    chefId,
-                  },
-                },
-              })),
-            },
-          })),
-        },
-      },
-      include: {
-        categories: {
-          include: {
-            dishes: {
-              include: {
-                dish: true,
-              },
-            },
-          },
-        },
       },
     });
 
-    res.status(201).json(menu);
+    // Aggiungiamo le categorie al meniu
+    const menuItems = categories.flatMap((cat) =>
+      cat.dishes
+        .filter((dishName) => dishName.trim() !== "")
+        .map((dishName) => ({
+          name: dishName,
+          category: cat.name,
+          type: cat.type,
+          menuId: menu.id,
+        }))
+    );
+
+    if (menuItems.length > 0) {
+      await prisma.menuItem.createMany({
+        data: menuItems,
+      });
+    }
+
+    const fullMenu = await prisma.menu.findUnique({
+      where: { id: menu.id },
+      include: { items: true },
+    });
+
+    res.status(201).json(fullMenu);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Errore durante la creazione del menu" });
@@ -76,21 +71,12 @@ const createMenu = async (req, res) => {
 const getAllMenus = async (req, res) => {
   try {
     const { chefId } = req.query;
-
     const whereClause = chefId ? { chefId: parseInt(chefId) } : {};
 
     const menus = await prisma.menu.findMany({
       where: whereClause,
       include: {
-        categories: {
-          include: {
-            dishes: {
-              include: {
-                dish: true,
-              },
-            },
-          },
-        },
+        items: true, // Include toate felurile din meniu
       },
       orderBy: { createdAt: "desc" },
     });
@@ -110,15 +96,7 @@ const getMenuById = async (req, res) => {
     const menu = await prisma.menu.findUnique({
       where: { id: menuId },
       include: {
-        categories: {
-          include: {
-            dishes: {
-              include: {
-                dish: true,
-              },
-            },
-          },
-        },
+        items: true,
       },
     });
 
@@ -132,28 +110,17 @@ const getMenuById = async (req, res) => {
     res.status(500).json({ error: "Errore durante il recupero del menu" });
   }
 };
+
 // funzione per eliminare un menu
 const deleteMenu = async (req, res) => {
   try {
     const menuId = parseInt(req.params.id);
 
-    // 1. șterge întâi legăturile dintre MenuCategory și Dish
-    await prisma.menuCategoryDish.deleteMany({
-      where: {
-        menuCategory: {
-          menuId: menuId,
-        },
-      },
+    await prisma.menuItem.deleteMany({
+      where: { menuId },
     });
 
-    // 2. apoi șterge categoriile
-    await prisma.menuCategory.deleteMany({
-      where: {
-        menuId: menuId,
-      },
-    });
-
-    // 3. apoi șterge meniul propriu-zis
+    // Apoi ștergem meniul
     await prisma.menu.delete({
       where: { id: menuId },
     });
@@ -169,6 +136,6 @@ module.exports = {
   createMenu,
   getAllMenus,
   getMenuById,
-  updateMenu,
+
   deleteMenu,
 };

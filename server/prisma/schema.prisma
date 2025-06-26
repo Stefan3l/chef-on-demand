@@ -1,116 +1,87 @@
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Chef {
-    id                    Int          @id @default(autoincrement())
-    first_name            String
-    last_name             String
-    bio                   String?
-    phone                 String?
-    profileImage          String?
-    previewUrl            String?      @unique
-    email                 String       @unique
-    password              String
-    resetToken            String? 
-    city                  String?
-    latitude              Float?
-    longitude             Float?
-    radiusKm              Int?
-    language              String?
-    resetTokenExpiry      DateTime?
-    createdAt             DateTime     @default(now())
+  id                Int       @id @default(autoincrement())
+  first_name        String
+  last_name         String
+  bio               String?
+  phone             String?
+  profileImage      String?
+  previewUrl        String?   @unique
+  email             String    @unique
+  password          String
+  resetToken        String? 
+  city              String?
+  latitude          Float?
+  longitude         Float?
+  radiusKm          Int?
+  language          String?
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime  @default(now())
 
-    dish                  Dish[]
-    menus                 Menu[]
-    messages              Message[]
+  dish      Dish[]
+  menus     Menu[]
+  messages  Message[]
 }
 
 model Dish {
-    id         Int         @id @default(autoincrement())
-    url        String?     // optional
-    name       String?     // optional 
-    category   String?     // optional
-    chefId     Int
-    chef       Chef        @relation(fields: [chefId], references: [id])
-    createdAt  DateTime    @default(now())
-
-    menuItems  MenuDish[]
-    menuLinks  MenuCategoryDish[]
-}
-
-model PasswordResetToken {
-    id          Int       @id @default(autoincrement())
-    token       String    @unique
-    email       String
-    expiresAt   DateTime
-    createdAt   DateTime  @default(now())
+  id         Int        @id @default(autoincrement())
+  url        String?    // optional
+  name       String?    // optional 
+  category   String?    // optional
+  chefId     Int
+  chef       Chef       @relation(fields: [chefId], references: [id])
+  createdAt  DateTime   @default(now())
 }
 
 model Menu {
-    id             Int              @id @default(autoincrement())
-    name           String       
-    description    String?
-    pricePerPerson Float
-    minGuests      Int
-    maxGuests      Int
-    createdAt      DateTime         @default(now())
+  id             Int           @id @default(autoincrement())
+  name           String
+  description    String?
+  pricePerPerson Float
+  minGuests      Int
+  maxGuests      Int
+  createdAt      DateTime      @default(now())
 
-    chefId         Int
-    chef           Chef             @relation(fields: [chefId], references: [id])
+  chefId         Int
+  chef           Chef          @relation(fields: [chefId], references: [id])
 
-    categories     MenuCategory[]
-    dishes         MenuDish[]
+  items          MenuItem[]    // felurile de mâncare proprii meniului
 }
 
-model MenuDish {
-    id        Int   @id @default(autoincrement())
-    menuId    Int
-    dishId    Int
-    order     Int
-
-    menu      Menu  @relation(fields: [menuId], references: [id])
-    dish      Dish  @relation(fields: [dishId], references: [id])
-
-    @@unique([menuId, dishId])
-}
-
-model MenuCategory {
-    id        Int               @id @default(autoincrement())
-    name      String            // Antipasto, Primo, etc.
-    type      String            // All Inclusive, 1, 2, 3...
-    menuId    Int
-    menu      Menu              @relation(fields: [menuId], references: [id])
-
-    dishes    MenuCategoryDish[]
-}
-
-model MenuCategoryDish {
-    id              Int            @id @default(autoincrement())
-    menuCategoryId  Int
-    dishId          Int
-
-    menuCategory    MenuCategory   @relation(fields: [menuCategoryId], references: [id])
-    dish            Dish           @relation(fields: [dishId], references: [id])
-
-    @@unique([menuCategoryId, dishId])
+model MenuItem {
+  id         Int      @id @default(autoincrement())
+  name       String   // Numele felului
+  category   String   // Antipasto, Primo, etc.
+  type       String?  // All Inclusive, 1, 2, 3, 4
+  menuId     Int
+  menu       Menu     @relation(fields: [menuId], references: [id])
 }
 
 model Message {
-    id          Int       @id @default(autoincrement())
-    fromName    String
-    fromEmail   String
-    content     String
-    fromChef    Boolean    @default(false)
-    isRead      Boolean    @default(false)
-    createdAt   DateTime   @default(now())
+  id        Int      @id @default(autoincrement())
+  fromName  String
+  fromEmail String
+  content   String
+  fromChef  Boolean   @default(false)
+  isRead    Boolean   @default(false)
+  createdAt DateTime  @default(now())
 
-    chefId      Int
-    chef        Chef       @relation(fields: [chefId], references: [id])
+  chefId    Int
+  chef      Chef      @relation(fields: [chefId], references: [id])
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
