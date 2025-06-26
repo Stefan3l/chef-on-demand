@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
-const { get } = require("http");
 
 // funzione per ottenere tutti i cuochi
 const getAllChefs = async (req, res) => {
@@ -102,20 +101,21 @@ const updateChef = async (req, res) => {
     longitude,
     radiusKm,
     language,
+    story, // storia personale sulla cucina
+    startCooking, // come ha iniziato a cucinare
+    secret, // un segreto
   } = req.body;
 
-  // controllo se la email modificata esiste già
+  // Controllo se l'email modificata è già in uso da un altro chef
   if (email) {
-    const existing = await prisma.chef.findUnique({
-      where: { email },
-    });
+    const existing = await prisma.chef.findUnique({ where: { email } });
     if (existing && existing.id !== req.user.id) {
       return res.status(400).json({ error: "Email già in uso" });
     }
   }
 
   try {
-    // definisce i dati da aggiornare
+    // Preparo i dati da aggiornare per il profilo dello chef
     const updateData = {
       first_name,
       last_name,
@@ -127,8 +127,7 @@ const updateChef = async (req, res) => {
       latitude: latitude ? parseFloat(latitude) : undefined,
       longitude: longitude ? parseFloat(longitude) : undefined,
       radiusKm: radiusKm !== undefined ? parseInt(radiusKm) : undefined,
-
-      language,
+      language: Array.isArray(language) ? language.join(",") : language,
     };
 
     // Se è stata caricata una nuova immagine del profilo
@@ -136,35 +135,47 @@ const updateChef = async (req, res) => {
       updateData.profileImage = req.file.path.replace(/\\/g, "/");
     }
 
-    // Se la password è stata fornita, esegui l'hashing
+    // Se è stata fornita una nuova password, viene criptata
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       updateData.password = hashedPassword;
     }
 
-    // Se la lingua è un array, uniscila in una stringa
-    if (Array.isArray(language)) {
-      updateData.language = language.join(",");
-    }
-
-    // Aggiorna il cuoco nel database
-    const updateChef = await prisma.chef.update({
+    // Aggiorno le informazioni di base dello chef
+    const updatedChef = await prisma.chef.update({
       where: { id: req.user.id },
       data: updateData,
     });
 
-    // Non restituire la password nel response
-    const { password: _, ...chefWithoutPassword } = updateChef;
+    // Aggiorno o creo i dettagli aggiuntivi dello chef (one-to-one)
+    await prisma.chefDetails.upsert({
+      where: { chefId: req.user.id },
+      update: {
+        story,
+        startCooking,
+        secret,
+      },
+      create: {
+        chefId: req.user.id,
+        story,
+        startCooking,
+        secret,
+      },
+    });
 
+    // Rimuovo la password dalla risposta per sicurezza
+    const { password: _, ...chefWithoutPassword } = updatedChef;
+
+    // Risposta al client con messaggio e dati aggiornati
     res.json({
       message: "Profilo aggiornato con successo",
       chef: chefWithoutPassword,
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ error: "Errore durante l'aggiornamento del profilo" });
+    res.status(500).json({
+      error: "Errore durante l'aggiornamento del profilo",
+    });
   }
 };
 

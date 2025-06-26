@@ -29,7 +29,19 @@ model Chef {
   dish      Dish[]
   menus     Menu[]
   messages  Message[]
+  details      ChefDetails?
 }
+
+model ChefDetails {
+  id           Int     @id @default(autoincrement())
+  story        String? // Parlo della mia cucina
+  startCooking String? // Come ho iniziato a cucinare
+  secret       String? // Un mio segreto
+
+  chefId       Int     @unique
+  chef         Chef    @relation(fields: [chefId], references: [id])
+}
+
 
 model Dish {
   id         Int        @id @default(autoincrement())
