@@ -76,15 +76,17 @@ const getAllMenus = async (req, res) => {
     const menus = await prisma.menu.findMany({
       where: whereClause,
       include: {
-        items: true, // Include toate felurile din meniu
+        items: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     res.json(menus);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Errore durante il recupero dei menu" });
+    console.error("EROARE getAllMenus:", error);
+    res.status(500).json({ error: "Eroare la încărcarea meniurilor" });
   }
 };
 

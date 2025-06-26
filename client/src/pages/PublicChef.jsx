@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 // import components
 import BioChef from "../components/publicChef/BioChef";
 import HeroChef from "../components/hero/HeroChef";
-import MenuChef from "../components/publicChef/MenuChef";
+import MenuCarousel from "../components/publicChef/MenuCarousel";
 import DishGallery from "../components/publicChef/DishGallery";
 import ChatModal from "../components/publicChef/ChatModal";
 
@@ -44,7 +44,7 @@ export default function PublicChef() {
         chefData={chefData}
       />
       <BioChef chefData={chefData} />
-      <MenuChef />
+      <MenuCarousel chefId={chefData.id} />
       <DishGallery images={imageUrls} />
       <ChatModal chefId={chefData.id} />
     </>
