@@ -50,6 +50,24 @@ export default function PiattiPage() {
     }
   };
 
+  const handleDeleteDish = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.delete(`http://localhost:3000/api/dishes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // eliminiamo il piatto dalla lista
+      setDishes((prev) => prev.filter((dish) => dish.id !== id));
+    } catch (error) {
+      console.error(
+        " Errore durante l'eliminazione:",
+        error.response?.data || error.message
+      );
+      setMessage("Errore durante l'eliminazione del piatto.");
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-4">I miei piatti</h1>
@@ -78,11 +96,24 @@ export default function PiattiPage() {
         {dishes
           .filter((dish) => dish.name && dish.category)
           .map((dish) => (
-            <li key={dish.id} className="p-4 rounded-md border shadow-sm">
-              <p className="font-semibold text-gray-800">{dish.name}</p>
-              <p className="text-sm text-gray-500">
-                Categoria: {dish.category}
-              </p>
+            <li
+              key={dish.id}
+              className="p-4 rounded-md border shadow-sm flex justify-between items-center"
+            >
+              <div>
+                <p className="font-semibold text-gray-800">{dish.name}</p>
+                <p className="text-sm text-gray-500">
+                  Categoria: {dish.category}
+                </p>
+              </div>
+
+              <button
+                onClick={() => handleDeleteDish(dish.id)}
+                className="text-red-600 hover:text-red-800 cursor-pointer"
+                title="Elimina piatto"
+              >
+                🗑️
+              </button>
             </li>
           ))}
       </ul>
