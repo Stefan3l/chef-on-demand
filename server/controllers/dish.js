@@ -8,11 +8,7 @@ const uploadDishImage = async (req, res) => {
   try {
     const { name, category } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: "Imaginea este obligatorie" });
-    }
-
-    const imagePath = req.file.path.replace(/\\/g, "/");
+    const imagePath = req.file ? req.file.path.replace(/\\/g, "/") : null;
 
     const newImage = await prisma.dish.create({
       data: {
@@ -24,20 +20,16 @@ const uploadDishImage = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "Imaginea preparatului a fost încărcată cu succes",
+      message: "Il piatto è stato caricato con successo",
       image: newImage,
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ error: "Eroare la încărcarea imaginii preparatului" });
+    res.status(500).json({ error: "Errore durante il caricamento" });
   }
 };
 
-const fs = require("fs");
-const path = require("path");
-
+// funzione per aggiornare un'immagine di un piatto
 const updateDishImage = async (req, res) => {
   try {
     const { id } = req.params;
