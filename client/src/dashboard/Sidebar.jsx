@@ -120,13 +120,14 @@ export default function Sidebar() {
         <hr className="my-4" />
 
         <NavLink to="#">Centro assistenza</NavLink>
-
-        <button
-          className="cursor-pointer"
-          onClick={() => setShowLogoutModal(true)}
-        >
-          Logout
-        </button>
+        <div>
+          <button
+            className="cursor-pointer"
+            onClick={() => setShowLogoutModal(true)}
+          >
+            Logout
+          </button>
+        </div>
 
         {/* Modal Logout */}
         <Dialog
