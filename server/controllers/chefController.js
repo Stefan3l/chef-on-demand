@@ -4,6 +4,8 @@ const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
+require("dotenv").config();
 
 // funzione per ottenere tutti i cuochi
 const getAllChefs = async (req, res) => {
@@ -87,6 +89,7 @@ const getChefById = async (req, res) => {
 };
 
 // funzione per aggiornare il profilo del cuoco autenticato
+
 const updateChef = async (req, res) => {
   const {
     first_name,
@@ -96,58 +99,102 @@ const updateChef = async (req, res) => {
     bio,
     previewUrl,
     password,
-    city,
+    city, // poate fi gol
     latitude,
     longitude,
     radiusKm,
     language,
-    story, // storia personale sulla cucina
-    startCooking, // come ha iniziato a cucinare
-    secret, // un segreto
+    story,
+    startCooking,
+    secret,
   } = req.body;
 
-  // Controllo se l'email modificata è già in uso da un altro chef
-  if (email) {
-    const existing = await prisma.chef.findUnique({ where: { email } });
-    if (existing && existing.id !== req.user.id) {
-      return res.status(400).json({ error: "Email già in uso" });
-    }
-  }
-
   try {
-    // Preparo i dati da aggiornare per il profilo dello chef
+    // Verificăm dacă noul email este deja folosit de alt chef
+    if (email) {
+      const existing = await prisma.chef.findUnique({ where: { email } });
+      if (existing && existing.id !== req.user.id) {
+        return res.status(400).json({ error: "Email già in uso" });
+      }
+    }
+
+    // Obține orașul pe baza coordonatelor (fallback dacă city e gol)
+    let resolvedCity = city;
+    console.log(
+      "VITE_GOOGLE_MAPS_API_KEY ===>",
+      process.env.VITE_GOOGLE_MAPS_API_KEY
+    );
+
+    if (!city && latitude && longitude) {
+      try {
+        const apiKey = process.env.VITE_GOOGLE_MAPS_API_KEY;
+        const response = await axios.get(
+          `https://maps.googleapis.com/maps/api/geocode/json`,
+          {
+            params: {
+              latlng: `${latitude},${longitude}`,
+              key: apiKey,
+            },
+          }
+        );
+        console.log(
+          "Geocode response:",
+          JSON.stringify(response.data, null, 2)
+        );
+
+        const results = response.data.results;
+        const addressComponents = results?.[0]?.address_components;
+
+        const cityComponent =
+          addressComponents?.find((c) => c.types.includes("locality")) ||
+          addressComponents?.find((c) =>
+            c.types.includes("administrative_area_level_2")
+          ) ||
+          addressComponents?.find((c) =>
+            c.types.includes("administrative_area_level_3")
+          );
+
+        if (cityComponent) {
+          resolvedCity = cityComponent.long_name;
+        }
+      } catch (err) {
+        console.error("Errore durante la geocodifica inversa:", err.message);
+      }
+    }
+
+    // Construim obiectul cu datele actualizate
     const updateData = {
       first_name,
       last_name,
-      bio,
       email,
       phone,
+      bio,
       previewUrl,
-      city,
+      city: resolvedCity,
       latitude: latitude ? parseFloat(latitude) : undefined,
       longitude: longitude ? parseFloat(longitude) : undefined,
       radiusKm: radiusKm !== undefined ? parseInt(radiusKm) : undefined,
       language: Array.isArray(language) ? language.join(",") : language,
     };
 
-    // Se è stata caricata una nuova immagine del profilo
+    // Dacă a fost trimis un fișier imagine, îl salvăm
     if (req.file) {
       updateData.profileImage = req.file.path.replace(/\\/g, "/");
     }
 
-    // Se è stata fornita una nuova password, viene criptata
+    // Dacă s-a transmis parolă nouă, o criptăm
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       updateData.password = hashedPassword;
     }
 
-    // Aggiorno le informazioni di base dello chef
+    // Actualizăm datele din tabelul chef
     const updatedChef = await prisma.chef.update({
       where: { id: req.user.id },
       data: updateData,
     });
 
-    // Aggiorno o creo i dettagli aggiuntivi dello chef (one-to-one)
+    // Upsert pentru detalii adiționale
     await prisma.chefDetails.upsert({
       where: { chefId: req.user.id },
       update: {
@@ -163,19 +210,18 @@ const updateChef = async (req, res) => {
       },
     });
 
-    // Rimuovo la password dalla risposta per sicurezza
+    // Eliminăm parola din răspuns
     const { password: _, ...chefWithoutPassword } = updatedChef;
 
-    // Risposta al client con messaggio e dati aggiornati
     res.json({
       message: "Profilo aggiornato con successo",
       chef: chefWithoutPassword,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Errore durante l'aggiornamento del profilo",
-    });
+    console.error("Errore updateChef:", error);
+    res
+      .status(500)
+      .json({ error: "Errore durante l'aggiornamento del profilo" });
   }
 };
 
