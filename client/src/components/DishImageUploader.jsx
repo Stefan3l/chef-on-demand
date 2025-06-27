@@ -68,7 +68,7 @@ export default function DishImagesUploader() {
         setDishImages((prev) =>
           prev.map((img) => (img.id === editDishId ? res.data.image : img))
         );
-        showMessage("Foto modificată cu succes!");
+        showMessage("L'imagine e stata mofificata!");
       } else {
         const res = await axios.post(
           "http://localhost:3000/api/dishes/upload",
@@ -105,10 +105,10 @@ export default function DishImagesUploader() {
       });
 
       setDishImages((prev) => prev.filter((img) => img.id !== dishId));
-      showMessage("Foto eliminată!");
+      showMessage("L'imagine eliminata!");
     } catch (err) {
-      console.error("Eroare la ștergere:", err);
-      showMessage("Eroare la ștergerea imaginii", "error");
+      console.error("Errore durante la cancelazione:", err);
+      showMessage("Errore durante la cancelazione", "error");
     }
   };
 
@@ -137,41 +137,43 @@ export default function DishImagesUploader() {
       )}
 
       <div className="flex flex-wrap gap-6">
-        {dishImages.map((img) => (
-          <div key={img.id} className="relative">
-            <img
-              src={`http://localhost:3000/${img.url}`}
-              alt={img.caption || "Piatto"}
-              className="w-40 h-40 object-cover rounded-2xl shadow-md"
-            />
+        {dishImages
+          .filter((img) => img.url && img.url.trim() !== "")
+          .map((img) => (
+            <div key={img.id} className="relative">
+              <img
+                src={`http://localhost:3000/${img.url}`}
+                alt={img.caption || "Piatto"}
+                className="w-40 h-40 object-cover rounded-2xl shadow-md"
+              />
 
-            <button
-              className="absolute top-1 right-1 text-white bg-black/50 rounded-full px-2 py-1 text-sm z-20"
-              onClick={() =>
-                setOpenMenuId(openMenuId === img.id ? null : img.id)
-              }
-            >
-              ⋮
-            </button>
+              <button
+                className="absolute top-1 right-1 text-white bg-black/50 rounded-full px-2 py-1 text-sm z-20"
+                onClick={() =>
+                  setOpenMenuId(openMenuId === img.id ? null : img.id)
+                }
+              >
+                ⋮
+              </button>
 
-            {openMenuId === img.id && (
-              <div className="absolute top-8 right-1 bg-white border rounded shadow z-30 flex flex-col">
-                <button
-                  className="px-4 py-2 text-sm hover:bg-gray-100 text-left"
-                  onClick={() => handleEdit(img.id)}
-                >
-                  Modifică
-                </button>
-                <button
-                  className="px-4 py-2 text-sm hover:bg-gray-100 text-left text-red-600"
-                  onClick={() => handleDelete(img.id)}
-                >
-                  Șterge
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+              {openMenuId === img.id && (
+                <div className="absolute top-8 right-1 bg-white border rounded shadow z-30 flex flex-col">
+                  <button
+                    className="px-4 py-2 text-sm hover:bg-gray-100 text-left"
+                    onClick={() => handleEdit(img.id)}
+                  >
+                    Modifică
+                  </button>
+                  <button
+                    className="px-4 py-2 text-sm hover:bg-gray-100 text-left text-red-600"
+                    onClick={() => handleDelete(img.id)}
+                  >
+                    Șterge
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
 
         <label
           htmlFor="dish-upload"

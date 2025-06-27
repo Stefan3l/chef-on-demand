@@ -3,6 +3,9 @@ import { useState } from "react";
 
 export default function ProfiloPersonale() {
   const [bio, setBio] = useState("");
+  const [story, setStory] = useState("");
+  const [startCooking, setStartCooking] = useState("");
+  const [secret, setSecret] = useState("");
   const [language, setLanguages] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -19,6 +22,11 @@ export default function ProfiloPersonale() {
     setSuccessMessage("");
     setErrorMessage("");
 
+    if (!bio || !story || !startCooking || !secret) {
+      setErrorMessage("Tutti i campi descrittivi sono obbligatori.");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
 
@@ -26,6 +34,9 @@ export default function ProfiloPersonale() {
         "http://localhost:3000/api/chefs/me",
         {
           bio,
+          story,
+          startCooking,
+          secret,
           language,
         },
         {
@@ -36,38 +47,95 @@ export default function ProfiloPersonale() {
       );
 
       setSuccessMessage("Profilo aggiornato con successo!");
-      setBio("");
-      setLanguages([]);
-
-      // cancella i messaggi dopo 2 secondi
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
+        setBio("");
+        setStory("");
+        setStartCooking("");
+        setSecret("");
+        setLanguages([]);
       }, 3000);
     } catch (err) {
       console.error("Errore:", err.response?.data || err.message);
       setErrorMessage("Si è verificato un errore.");
-      setTimeout(() => setErrorMessage(""), 2000);
+      setTimeout(() => setErrorMessage(""), 3000);
     }
   };
 
   return (
     <div className="flex flex-col h-full">
-      <h1 className="text-2xl font-bold mb-4">La tua Biografia</h1>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <div>
-          <label className="block mb-2">Definisci te stesso in una frase</label>
+      <h1 className="text-2xl font-bold mb-4">Il tuo Profilo</h1>
+      <form onSubmit={handleSubmit}>
+        {/* BIO */}
+        <div className="mb-4 ">
+          <label className="block mb-2 font-semibold">Parla di te</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="Scrivi qui la tua biografia..."
-            className="border-2 border-gray-200 rounded-lg p-2 w-full h-32"
-            minLength={0}
+            placeholder="Chi sei come chef?"
+            className="border-2 border-gray-200 rounded-lg p-2 w-full h-28 pr-16"
             maxLength={150}
-          ></textarea>
+            required
+          />
         </div>
 
-        <div className="mt-6">
+        {/* STORY */}
+        <div className="mb-4 ">
+          <label className="block mb-2 font-semibold">
+            Raccontaci qualcosa sulla tua cucina
+          </label>
+          <textarea
+            value={story}
+            onChange={(e) => setStory(e.target.value)}
+            placeholder="Da dove nasce la tua passione per la cucina?"
+            className="border-2 border-gray-200 rounded-lg p-2 w-full h-28 pr-16"
+            maxLength={150}
+            required
+          />
+          <div className="text-right text-xs text-gray-400 mt-1">
+            {story.length}/150
+          </div>
+        </div>
+
+        {/* START COOKING */}
+        <div className="mb-4 ">
+          <label className="block mb-2 font-semibold">
+            Quando hai iniziato a cucinare?
+          </label>
+          <textarea
+            value={startCooking}
+            onChange={(e) => setStartCooking(e.target.value)}
+            placeholder="Scrivi da quanto cucini..."
+            className="border-2 border-gray-200 rounded-lg p-2 w-full h-28 pr-16"
+            maxLength={150}
+            required
+          />
+          <div className="text-right text-xs text-gray-400 mt-1">
+            {startCooking.length}/150
+          </div>
+        </div>
+
+        {/* SECRET */}
+        <div className="mb-4 ">
+          <label className="block mb-2 font-semibold">
+            Svelaci un tuo segreto!
+          </label>
+          <textarea
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+            placeholder="Un piccolo segreto culinario..."
+            className="border-2 border-gray-200 rounded-lg p-2 w-full h-28 pr-16"
+            maxLength={150}
+            required
+          />
+          <div className="text-right text-xs text-gray-400 mt-1">
+            {secret.length}/150
+          </div>
+        </div>
+
+        {/* LINGUE */}
+        <div className="mb-6">
           <label className="block mb-2 font-semibold">Lingua di lavoro</label>
           <div className="grid grid-cols-2 gap-4">
             {[
@@ -94,10 +162,10 @@ export default function ProfiloPersonale() {
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
           <button
             type="submit"
-            className="bg-blue-800 cursor-pointer px-5 py-2 text-white rounded-2xl hover:bg-blue-700 transition-colors duration-300"
+            className="bg-blue-800 px-5 py-2 text-white rounded-2xl hover:bg-blue-700 transition-colors duration-300"
           >
             Salva le Modifiche
           </button>

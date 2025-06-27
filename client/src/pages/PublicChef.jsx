@@ -20,7 +20,7 @@ export default function PublicChef() {
       );
       setChefData(res.data);
     } catch (error) {
-      console.error("Eroare la obținerea datelor chef-ului:", error);
+      console.error("Errore durante il caricamento:", error);
     }
   };
 
@@ -34,7 +34,9 @@ export default function PublicChef() {
 
   // Preparo gli URL delle immagini dei piatti
   const imageUrls =
-    chefData.dish?.map((img) => `http://localhost:3000/${img.url}`) || [];
+    chefData.dish
+      ?.filter((img) => img.url && img.url.trim() !== "")
+      .map((img) => `http://localhost:3000/${img.url}`) || [];
 
   return (
     <>

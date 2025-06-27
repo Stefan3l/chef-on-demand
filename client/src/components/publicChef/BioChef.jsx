@@ -33,27 +33,15 @@ export default function BioChef({ chefData }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="flex flex-col gap-2">
           <p className="text-lg font-semibold">Parlo della cucina...</p>
-          <p className="text-lg">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos harum
-            delectus dolor impedit alias repellendus maiores, aspernatur quis
-            provident possimus odit
-          </p>
+          <p className="text-lg">{chefData.details?.story}</p>
         </div>
         <div className="flex flex-col gap-2">
           <p className="text-lg font-semibold">Inizia a cucinare...</p>
-          <p className="text-lg">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos harum
-            delectus dolor impedit alias repellendus maiores, aspernatur quis
-            provident possimus odit
-          </p>
+          <p className="text-lg">{chefData.details?.startCooking}</p>
         </div>
         <div className="flex flex-col gap-2">
           <p className="text-lg font-semibold">Un secreto...</p>
-          <p className="text-lg">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos harum
-            delectus dolor impedit alias repellendus maiores, aspernatur quis
-            provident possimus odit
-          </p>
+          <p className="text-lg">{chefData.details?.secret}</p>
         </div>
       </div>
     </section>

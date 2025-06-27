@@ -4,12 +4,6 @@ export default function DishGallery({ images = [] }) {
   const [visibleCount, setVisibleCount] = useState(5);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Filtro le immagini per rimuovere quelle non valide
-  const validImages = images.filter((img) => img && img.url);
-
-  // se non ci sono immagini valide, ritorniamo null
-  if (validImages.length === 0) return null;
-
   // controlliamo se lo schermo è mobile
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -26,6 +20,13 @@ export default function DishGallery({ images = [] }) {
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + (isMobile ? 3 : 8));
   };
+  // Filtro le immagini per rimuovere quelle non valide
+  const validImages = images.filter(
+    (img) => typeof img === "string" && img.trim() !== ""
+  );
+
+  // se non ci sono immagini valide, ritorniamo null
+  if (validImages.length === 0) return null;
 
   const visibleImages = validImages.slice(0, visibleCount);
   const hasMore = visibleCount < validImages.length;
@@ -36,7 +37,7 @@ export default function DishGallery({ images = [] }) {
         {visibleImages.map((img, idx) => (
           <img
             key={idx}
-            src={img.url}
+            src={img}
             alt={`Dish ${idx + 1}`}
             className="w-full h-auto rounded-lg shadow-lg break-inside-avoid"
             loading="lazy"

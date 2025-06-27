@@ -34,19 +34,18 @@ const getMe = async (req, res) => {
         dish: true,
         menus: {
           include: {
-            dishes: true,
+            items: true,
           },
         },
+        details: true,
       },
     });
 
-    // Controlla se il cuoco esiste
     if (!chef) {
       return res.status(404).json({ error: "Chef non trovato" });
     }
-    // Non restituire la password nel response
-    const { password: _, ...chefWithoutPassword } = chef;
 
+    const { password: _, ...chefWithoutPassword } = chef;
     res.json(chefWithoutPassword);
   } catch (error) {
     console.error(error);
@@ -66,6 +65,7 @@ const getChefById = async (req, res) => {
         menus: {
           include: {
             dishes: true,
+            chefDetails: true,
           },
         },
       },
@@ -224,21 +224,16 @@ const getChefByPreviewParam = async (req, res) => {
   try {
     const chef = await prisma.chef.findUnique({
       where: { id },
-      select: {
-        id: true,
-        first_name: true,
-        last_name: true,
-        email: true,
-        bio: true,
-        profileImage: true,
-        previewUrl: true,
-        city: true,
+      include: {
         dish: true,
+        menus: true,
+        messages: true,
+        details: true, // NU chefDetails — vezi mai jos explicația
       },
     });
-    console.log("Chef găsit:", chef);
+
     if (!chef) {
-      return res.status(404).json({ error: "Chef inexistent" });
+      return res.status(404).json({ error: "Chef non trovato" });
     }
 
     if (
