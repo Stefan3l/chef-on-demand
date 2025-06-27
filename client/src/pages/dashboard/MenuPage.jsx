@@ -25,6 +25,27 @@ export default function MenuPage() {
     }
   };
 
+  const handleCreateMenu = async (formData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:3000/api/menus",
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setIsModalOpen(false);
+      setMessage(" Menu creato con successo!");
+      fetchMenus();
+    } catch (error) {
+      console.error("Errore creando il menu:", error);
+      setMessage(" Errore durante la creazione del menu.");
+    } finally {
+      setTimeout(() => setMessage(""), 3000);
+    }
+  };
+
   const handleToggleMenu = (menuId) => {
     setExpandedMenuId((prev) => (prev === menuId ? null : menuId));
   };
@@ -60,10 +81,10 @@ export default function MenuPage() {
         }
       );
       setMessage("✅ Ordine salvata con successo!");
-      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
       console.error("Errore salvando ordine:", err);
       setMessage("❌ Errore durante il salvataggio.");
+    } finally {
       setTimeout(() => setMessage(""), 3000);
     }
   };
@@ -82,7 +103,7 @@ export default function MenuPage() {
       <MenuFormModal
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
-        onSubmit={() => {}}
+        onSubmit={handleCreateMenu}
       />
 
       {message && (

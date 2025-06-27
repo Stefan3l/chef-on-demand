@@ -10,7 +10,7 @@ const createMenu = async (req, res) => {
       pricePerPerson,
       minGuests,
       maxGuests,
-      categories, // array con: { name: "Antipasto", type: "All Inclusive", dishes: ["Bruschette", "Caprese"] }
+      items, // <<=== aici a fost schimbat!
     } = req.body;
 
     if (
@@ -18,14 +18,13 @@ const createMenu = async (req, res) => {
       !pricePerPerson ||
       !minGuests ||
       !maxGuests ||
-      !Array.isArray(categories)
+      !Array.isArray(items)
     ) {
       return res.status(400).json({ error: "Campi obbligatori mancanti" });
     }
 
     const chefId = req.user.id;
 
-    // 1. Creiamo il Menu
     const menu = await prisma.menu.create({
       data: {
         name,
@@ -37,17 +36,15 @@ const createMenu = async (req, res) => {
       },
     });
 
-    // Aggiungiamo le categorie al meniu
-    const menuItems = categories.flatMap((cat) =>
-      cat.dishes
-        .filter((dishName) => dishName.trim() !== "")
-        .map((dishName) => ({
-          name: dishName,
-          category: cat.name,
-          type: cat.type,
-          menuId: menu.id,
-        }))
-    );
+    const menuItems = items
+      .filter((dish) => dish.name && dish.name.trim() !== "")
+      .map((dish, index) => ({
+        name: dish.name.trim(),
+        category: dish.category,
+        type: dish.type,
+        order: index,
+        menuId: menu.id,
+      }));
 
     if (menuItems.length > 0) {
       await prisma.menuItem.createMany({
@@ -62,7 +59,7 @@ const createMenu = async (req, res) => {
 
     res.status(201).json(fullMenu);
   } catch (error) {
-    console.error(error);
+    console.error("Errore backend createMenu:", error);
     res.status(500).json({ error: "Errore durante la creazione del menu" });
   }
 };

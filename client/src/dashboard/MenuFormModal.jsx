@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { X } from "lucide-react";
 
-const CATEGORY_OPTIONS = ["Antipasto", "Primo Piatto", "Secondo", "Dessert"];
+const CATEGORY_OPTIONS = ["Antipasto", "Primo", "Secondo", "Dessert"];
 const TYPE_OPTIONS = ["All Inclusive", "1", "2", "3", "4"];
 
 export default function MenuFormModal({ isOpen, setIsOpen, onSubmit }) {
@@ -32,7 +32,27 @@ export default function MenuFormModal({ isOpen, setIsOpen, onSubmit }) {
   };
 
   const handleSubmit = () => {
-    onSubmit(formData);
+    const items = formData.categories.flatMap((cat) =>
+      cat.dishes
+        .filter((d) => d.trim() !== "")
+        .map((dish, index) => ({
+          name: dish.trim(),
+          category: cat.name,
+          type: cat.type,
+          order: index,
+        }))
+    );
+
+    const dataToSend = {
+      name: formData.name,
+      description: formData.description,
+      pricePerPerson: parseFloat(formData.pricePerPerson),
+      minGuests: parseInt(formData.minGuests),
+      maxGuests: parseInt(formData.maxGuests),
+      items,
+    };
+
+    onSubmit(dataToSend);
     setIsOpen(false);
   };
 
@@ -54,7 +74,6 @@ export default function MenuFormModal({ isOpen, setIsOpen, onSubmit }) {
             </button>
           </div>
 
-          {/* Nume și Descriere */}
           <input
             type="text"
             placeholder="Nome del menu"
@@ -72,7 +91,6 @@ export default function MenuFormModal({ isOpen, setIsOpen, onSubmit }) {
             rows={3}
           />
 
-          {/* Preț și persoane */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <input
               type="number"
@@ -103,7 +121,6 @@ export default function MenuFormModal({ isOpen, setIsOpen, onSubmit }) {
             />
           </div>
 
-          {/* Categorii */}
           {formData.categories.map((cat, catIndex) => (
             <div key={cat.name} className="mb-6 border-t pt-4">
               <div className="flex justify-between items-center mb-2">

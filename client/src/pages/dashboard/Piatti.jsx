@@ -8,7 +8,7 @@ export default function PiattiPage() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const categories = ["Antipasto", "Primo Piatto", "Secondo", "Dessert"];
+  const categories = ["Antipasto", "Primo", "Secondo", "Dessert"];
 
   useEffect(() => {
     fetchMenuItems();
