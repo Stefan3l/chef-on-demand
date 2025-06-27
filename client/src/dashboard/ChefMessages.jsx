@@ -1,33 +1,55 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useUnreadMessages } from "../components/contexts/UnreadMessagesContext";
 
 export default function ChefMessages({ chefId }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [replyStates, setReplyStates] = useState({});
   const [openReplies, setOpenReplies] = useState({});
+  const [replyStates, setReplyStates] = useState({});
+
+  const { setUnreadCount } = useUnreadMessages();
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  // Recupera i messaggi del chef
   useEffect(() => {
     if (!chefId) return;
 
     const fetchMessages = async () => {
       try {
         const res = await axios.get(`${API_URL}/api/messages?chefId=${chefId}`);
-        setMessages(Array.isArray(res.data) ? res.data : []);
+        const msgs = Array.isArray(res.data) ? res.data : [];
+        setMessages(msgs);
+
+        const unread = msgs.filter((msg) => !msg.isRead).length;
+        setUnreadCount(unread);
       } catch (error) {
         console.error("Errore nel recupero dei messaggi:", error);
         setMessages([]);
+        setUnreadCount(0);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMessages();
-  }, [chefId]);
+  }, [chefId, setUnreadCount]);
 
-  // Mostra o nasconde la textarea per rispondere
+  // ✅ Marcare ca citit
+  const markAsRead = async (messageId) => {
+    try {
+      await axios.put(`${API_URL}/api/messages/${messageId}/mark-as-read`);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, isRead: true } : msg
+        )
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+    } catch (error) {
+      console.error("Errore nel marcare il messaggio come letto:", error);
+    }
+  };
+
+  // ✅ Toggle reply box
   const toggleReplyBox = (msgId) => {
     setOpenReplies((prev) => ({
       ...prev,
@@ -35,7 +57,7 @@ export default function ChefMessages({ chefId }) {
     }));
   };
 
-  // Salva il contenuto della risposta scritta
+  // ✅ Scriere răspuns
   const handleReplyChange = (msgId, value) => {
     setReplyStates((prev) => ({
       ...prev,
@@ -43,7 +65,7 @@ export default function ChefMessages({ chefId }) {
     }));
   };
 
-  // Invia la risposta al cliente
+  // ✅ Trimitere răspuns
   const handleReplySend = async (msg) => {
     const reply = replyStates[msg.id];
     if (!reply?.trim()) return;
@@ -57,26 +79,12 @@ export default function ChefMessages({ chefId }) {
         chefId: msg.chefId,
       });
 
-      alert("Messaggio inviato!");
       setReplyStates((prev) => ({ ...prev, [msg.id]: "" }));
       setOpenReplies((prev) => ({ ...prev, [msg.id]: false }));
+      alert("Risposta inviata!");
     } catch (err) {
       console.error("Errore nell'invio della risposta:", err);
       alert("Errore durante l'invio del messaggio");
-    }
-  };
-
-  // Marca il messaggio come letto
-  const markAsRead = async (messageId) => {
-    try {
-      await axios.put(`${API_URL}/api/messages/${messageId}/mark-as-read`);
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId ? { ...msg, isRead: true } : msg
-        )
-      );
-    } catch (error) {
-      console.error("Errore nel marcare il messaggio come letto:", error);
     }
   };
 
@@ -101,15 +109,13 @@ export default function ChefMessages({ chefId }) {
                   {new Date(msg.createdAt).toLocaleString()}
                 </p>
               </div>
-
               {!msg.isRead && (
-                <span className="text-red-500 text-xs font-bold ml-4 ">
+                <span className="text-red-500 text-xs font-bold ml-4">
                   🟢 Nuovo
                 </span>
               )}
             </div>
 
-            {/* buton "Leggi" afisează mesajul și marchează ca citit */}
             {!msg.isRead && (
               <button
                 onClick={() => markAsRead(msg.id)}
@@ -119,19 +125,15 @@ export default function ChefMessages({ chefId }) {
               </button>
             )}
 
-            {/* dacă mesajul e citit, îl afișăm */}
             {msg.isRead && (
               <>
                 <p className="text-gray-800 mt-2">{msg.content}</p>
-
-                {/* răspuns */}
                 <button
                   onClick={() => toggleReplyBox(msg.id)}
                   className="text-blue-600 font-semibold hover:underline text-sm mt-2 cursor-pointer"
                 >
                   {openReplies[msg.id] ? "Annulla" : "Rispondi"}
                 </button>
-
                 {openReplies[msg.id] && (
                   <div className="mt-2">
                     <textarea

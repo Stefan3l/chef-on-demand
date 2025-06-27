@@ -56,10 +56,14 @@ const getMe = async (req, res) => {
 // funzione per ottenere il profilo del cuoco byID
 const getChefById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "ID invalid" });
+    }
 
     const chef = await prisma.chef.findUnique({
-      where: { id: Number(id) },
+      where: { id },
       include: {
         dish: true,
         menus: {
@@ -71,18 +75,14 @@ const getChefById = async (req, res) => {
       },
     });
 
-    // Controlla se il cuoco esiste
     if (!chef) {
-      return res.status(404).json({ error: "Chef non trovato" });
+      return res.status(404).json({ error: "Chef not found" });
     }
 
-    // Non restituire la password e phone nel response
-    const { password, phone, ...chefWithOutPublic } = chef;
-
-    res.json(chefWithOutPublic);
+    res.json(chef);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Errore durante il recupero del profilo" });
+    console.error("Errore in getChef:", error);
+    res.status(500).json({ error: "Errore server" });
   }
 };
 
@@ -242,18 +242,51 @@ const getChefByPreviewParam = async (req, res) => {
     ) {
       return res
         .status(400)
-        .json({ error: "Preview URL invalid sau modificat" });
+        .json({ error: "Preview URL invalid o modificato" });
     }
 
     const { password, phone, ...safeChef } = chef;
     res.json(safeChef);
   } catch (error) {
-    console.error("Eroare în getChefByPreviewParam:", error);
-    res.status(500).json({ error: "Eroare server" });
+    console.error("Errore in  getChefByPreviewParam:", error);
+    res.status(500).json({ error: "Errore  server" });
+  }
+};
+
+// Funzione per ottenere tutti i cuochi che hanno un profilo pubblico (preview)
+const getAllChefsWithPreview = async (req, res) => {
+  try {
+    const chefs = await prisma.chef.findMany({
+      where: {
+        previewUrl: {
+          not: "",
+        },
+        profileImage: {
+          not: "",
+        },
+      },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        previewUrl: true,
+        profileImage: true,
+        bio: true,
+      },
+    });
+
+    console.log(" Chef trovati:", chefs.length);
+    res.status(200).json(chefs);
+  } catch (error) {
+    console.error(" Errore nel recupero dei profili pubblici:", error);
+    res.status(500).json({
+      errore: "Errore durante il recupero dei profili pubblici",
+    });
   }
 };
 
 module.exports = {
+  getAllChefsWithPreview,
   getAllChefs,
   getMe,
   updateChef,
