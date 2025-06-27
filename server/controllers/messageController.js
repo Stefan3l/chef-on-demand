@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const sendEmail = require("../utils/sendEmail");
 
 // funzione per inviare un messaggio
 const sendMessage = async (req, res) => {
@@ -70,8 +71,40 @@ const markMessageAsRead = async (req, res) => {
   }
 };
 
+// funzione per inviare un'email di notifica
+const replyToMessage = async (req, res) => {
+  const { messageId, replyText } = req.body;
+
+  try {
+    const originalMsg = await prisma.message.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!originalMsg) {
+      return res.status(404).json({ error: "Mesajul nu a fost găsit." });
+    }
+
+    // Trimite email către client
+    await sendEmail({
+      to: originalMsg.fromEmail,
+      subject: `Risposta dello Chef`,
+      text: `Lo chef ti ha risposto:\n\n${replyText}`,
+      html: `
+        <p>Lo chef ti ha risposto:</p>
+        <blockquote>${replyText}</blockquote>
+      `,
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Eroare la trimiterea răspunsului:", err);
+    return res.status(500).json({ error: "Eroare server." });
+  }
+};
+
 module.exports = {
   sendMessage,
   getMessagesByChefId,
   markMessageAsRead,
+  replyToMessage,
 };

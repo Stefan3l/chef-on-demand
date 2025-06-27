@@ -7,6 +7,7 @@ export default function ChefMessages({ chefId }) {
   const [loading, setLoading] = useState(true);
   const [openReplies, setOpenReplies] = useState({});
   const [replyStates, setReplyStates] = useState({});
+  const [statusMessage, setStatusMessage] = useState(null);
 
   const { setUnreadCount } = useUnreadMessages();
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -23,7 +24,10 @@ export default function ChefMessages({ chefId }) {
         const unread = msgs.filter((msg) => !msg.isRead).length;
         setUnreadCount(unread);
       } catch (error) {
-        console.error("Errore nel recupero dei messaggi:", error);
+        setStatusMessage({
+          type: "error",
+          text: "Errore nel recupero dei messaggi.",
+        });
         setMessages([]);
         setUnreadCount(0);
       } finally {
@@ -34,7 +38,11 @@ export default function ChefMessages({ chefId }) {
     fetchMessages();
   }, [chefId, setUnreadCount]);
 
-  // ✅ Marcare ca citit
+  const showMessage = (type, text) => {
+    setStatusMessage({ type, text });
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+
   const markAsRead = async (messageId) => {
     try {
       await axios.put(`${API_URL}/api/messages/${messageId}/mark-as-read`);
@@ -45,11 +53,10 @@ export default function ChefMessages({ chefId }) {
       );
       setUnreadCount((prev) => Math.max(prev - 1, 0));
     } catch (error) {
-      console.error("Errore nel marcare il messaggio come letto:", error);
+      showMessage("error", "Errore durante la lettura del messaggio.");
     }
   };
 
-  // ✅ Toggle reply box
   const toggleReplyBox = (msgId) => {
     setOpenReplies((prev) => ({
       ...prev,
@@ -57,7 +64,6 @@ export default function ChefMessages({ chefId }) {
     }));
   };
 
-  // ✅ Scriere răspuns
   const handleReplyChange = (msgId, value) => {
     setReplyStates((prev) => ({
       ...prev,
@@ -65,26 +71,21 @@ export default function ChefMessages({ chefId }) {
     }));
   };
 
-  // ✅ Trimitere răspuns
   const handleReplySend = async (msg) => {
     const reply = replyStates[msg.id];
     if (!reply?.trim()) return;
 
     try {
-      await axios.post(`${API_URL}/api/messages`, {
-        fromName: "Chef",
-        fromEmail: "noreply@chefonline.com",
-        content: reply,
-        fromChef: true,
-        chefId: msg.chefId,
+      await axios.post(`${API_URL}/api/messages/reply`, {
+        messageId: msg.id,
+        replyText: reply,
       });
 
       setReplyStates((prev) => ({ ...prev, [msg.id]: "" }));
       setOpenReplies((prev) => ({ ...prev, [msg.id]: false }));
-      alert("Risposta inviata!");
+      showMessage("success", "Risposta inviata con successo via email!");
     } catch (err) {
-      console.error("Errore nell'invio della risposta:", err);
-      alert("Errore durante l'invio del messaggio");
+      showMessage("error", "Errore durante l'invio della risposta.");
     }
   };
 
@@ -92,8 +93,21 @@ export default function ChefMessages({ chefId }) {
   if (!messages.length) return <p>Nessun messaggio ricevuto.</p>;
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg">
+    <div className="bg-white p-6 rounded-xl shadow-lg relative">
       <h2 className="text-xl font-semibold mb-4">Messaggi ricevuti</h2>
+
+      {statusMessage && (
+        <div
+          className={`mb-4 px-4 py-2 rounded text-sm ${
+            statusMessage.type === "success"
+              ? "bg-green-100 text-green-800 border border-green-300"
+              : "bg-red-100 text-red-800 border border-red-300"
+          }`}
+        >
+          {statusMessage.text}
+        </div>
+      )}
+
       <ul className="space-y-6">
         {messages.map((msg) => (
           <li
