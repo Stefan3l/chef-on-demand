@@ -15,7 +15,7 @@ export default function PiattiPage() {
   const fetchDishes = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/dishes", {
+      const response = await axios.get("http://localhost:3000/api/chef/menus", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDishes(response.data);

@@ -90,10 +90,33 @@ const getAllMenus = async (req, res) => {
   }
 };
 
+// funzione per ottenere tutti i menu di un chef specifico
+const getMenus = async (req, res) => {
+  try {
+    const chefId = req.user.id; // IA din token, nu din URL
+
+    const menus = await prisma.menu.findMany({
+      where: { chefId },
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.json(menus);
+  } catch (error) {
+    console.error("EROARE getAllMenus:", error);
+    res.status(500).json({ error: "Eroare la încărcarea meniurilor" });
+  }
+};
+
 // funzione per ottenere un menu specifico
 const getMenuById = async (req, res) => {
   try {
     const menuId = parseInt(req.params.id);
+    const chefId = req.user.id;
 
     const menu = await prisma.menu.findUnique({
       where: { id: menuId },
@@ -103,7 +126,12 @@ const getMenuById = async (req, res) => {
     });
 
     if (!menu) {
-      return res.status(404).json({ error: "Menu non trovato" });
+      // Nu afișa acces negat, doar spune că nu există
+      return res.status(200).json(null); // sau [] dacă preferi
+    }
+
+    if (menu.chefId !== chefId) {
+      return res.status(403).json({ error: "Accesso negato a questo menu" });
     }
 
     res.json(menu);
@@ -138,6 +166,6 @@ module.exports = {
   createMenu,
   getAllMenus,
   getMenuById,
-
+  getMenus,
   deleteMenu,
 };

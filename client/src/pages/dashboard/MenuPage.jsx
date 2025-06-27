@@ -15,11 +15,11 @@ export default function MenuPage() {
   const fetchMenus = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/menus", {
+      const response = await axios.get("http://localhost:3000/api/chef/menus", {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
-      setMenus(response.data);
+      setMenus(response.data); // doar meniurile chef-ului logat
     } catch (error) {
       console.error("Errore durante il caricamento", error);
       showMessage("Errore durante il caricamento", "error");
@@ -68,7 +68,7 @@ export default function MenuPage() {
         onSubmit={handleAddMenu}
       />
 
-      {/* Afișare mesaj */}
+      {/* Mesaj de succes/eroare */}
       {message.text && (
         <div
           className={`fixed top-6 right-6 px-4 py-2 rounded shadow-lg text-white ${
@@ -79,17 +79,18 @@ export default function MenuPage() {
         </div>
       )}
 
-      {/* Listează meniurile deja adăugate */}
+      {/* Afișare meniuri dacă există */}
       <div className="mt-8 space-y-4">
-        {menus.map((menu) => (
-          <div key={menu.id} className="border p-4 rounded shadow">
-            <h2 className="text-lg font-semibold">{menu.name}</h2>
-            <p className="text-sm text-gray-500">{menu.description}</p>
-            <p className="mt-2 text-sm">
-              <strong>Prezzo per persona:</strong> {menu.pricePerPerson} €
-            </p>
-          </div>
-        ))}
+        {menus.length > 0 &&
+          menus.map((menu) => (
+            <div key={menu.id} className="border p-4 rounded shadow">
+              <h2 className="text-lg font-semibold">{menu.name}</h2>
+              <p className="text-sm text-gray-500">{menu.description}</p>
+              <p className="mt-2 text-sm">
+                <strong>Prezzo per persona:</strong> {menu.pricePerPerson} €
+              </p>
+            </div>
+          ))}
       </div>
     </div>
   );
