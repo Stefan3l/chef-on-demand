@@ -76,7 +76,11 @@ const getAllMenus = async (req, res) => {
     const menus = await prisma.menu.findMany({
       where: whereClause,
       include: {
-        items: true,
+        items: {
+          orderBy: {
+            order: "asc",
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -85,8 +89,8 @@ const getAllMenus = async (req, res) => {
 
     res.json(menus);
   } catch (error) {
-    console.error("EROARE getAllMenus:", error);
-    res.status(500).json({ error: "Eroare la încărcarea meniurilor" });
+    console.error("Errore getAllMenus:", error);
+    res.status(500).json({ error: "Errore durante il caricamento dei menu" });
   }
 };
 
@@ -140,6 +144,44 @@ const getMenuById = async (req, res) => {
     res.status(500).json({ error: "Errore durante il recupero del menu" });
   }
 };
+// fimzione per riordinare gli elementi del menu
+const reorderMenuItems = async (req, res) => {
+  const menuId = parseInt(req.params.id);
+  const chefId = req.user.id;
+  const { items } = req.body;
+
+  try {
+    // Verifica se il menu esiste e appartiene allo chef autenticato
+    const menu = await prisma.menu.findUnique({
+      where: { id: menuId },
+    });
+
+    if (!menu) {
+      return res.status(404).json({ error: "Menu non trovato." });
+    }
+
+    if (menu.chefId !== chefId) {
+      return res.status(403).json({ error: "Accesso negato a questo menu." });
+    }
+
+    // Aggiorna l'ordine per ogni piatto del menu
+    const aggiornamenti = items.map((item, index) =>
+      prisma.menuItem.update({
+        where: { id: item.id },
+        data: { order: index },
+      })
+    );
+
+    await Promise.all(aggiornamenti);
+
+    res.json({ message: "Ordine dei piatti salvato con successo." });
+  } catch (error) {
+    console.error("Errore durante il riordino dei piatti:", error);
+    res
+      .status(500)
+      .json({ error: "Errore durante il salvataggio dell'ordine." });
+  }
+};
 
 // funzione per eliminare un menu
 const deleteMenu = async (req, res) => {
@@ -168,4 +210,5 @@ module.exports = {
   getMenuById,
   getMenus,
   deleteMenu,
+  reorderMenuItems,
 };

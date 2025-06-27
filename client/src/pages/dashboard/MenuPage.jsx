@@ -1,53 +1,70 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import MenuFormModal from "../../dashboard/MenuFormModal";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export default function MenuPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [menus, setMenus] = useState([]);
-  const [message, setMessage] = useState({ text: "", type: "" });
+  const [expandedMenuId, setExpandedMenuId] = useState(null);
+  const [message, setMessage] = useState("");
 
-  const showMessage = (text, type = "success") => {
-    setMessage({ text, type });
-    setTimeout(() => setMessage({ text: "", type: "" }), 3000);
-  };
+  useEffect(() => {
+    fetchMenus();
+  }, []);
 
   const fetchMenus = async () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get("http://localhost:3000/api/chef/menus", {
         headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
       });
-      setMenus(response.data); // doar meniurile chef-ului logat
+      setMenus(response.data);
     } catch (error) {
-      console.error("Errore durante il caricamento", error);
-      showMessage("Errore durante il caricamento", "error");
+      console.error("Eroare:", error);
     }
   };
 
-  useEffect(() => {
-    fetchMenus();
-  }, []);
+  const handleToggleMenu = (menuId) => {
+    setExpandedMenuId((prev) => (prev === menuId ? null : menuId));
+  };
 
-  const handleAddMenu = async (formData) => {
+  const handleDragEnd = (result, menuId) => {
+    if (!result.destination) return;
+
+    const updatedMenus = [...menus];
+    const menuIndex = updatedMenus.findIndex((m) => m.id === menuId);
+    const items = Array.from(updatedMenus[menuIndex].items);
+
+    const [reordered] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reordered);
+
+    updatedMenus[menuIndex].items = items;
+    setMenus(updatedMenus);
+  };
+
+  const handleSaveOrder = async (menuId) => {
+    const menu = menus.find((m) => m.id === menuId);
+    const orderedItems = menu.items.map((item, index) => ({
+      id: item.id,
+      order: index,
+    }));
+
     try {
       const token = localStorage.getItem("token");
-
-      const response = await axios.post(
-        "http://localhost:3000/api/menus",
-        formData,
+      await axios.patch(
+        `http://localhost:3000/api/menus/${menuId}/reorder`,
+        { items: orderedItems },
         {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
         }
       );
-
-      setMenus((prev) => [response.data, ...prev]);
-      showMessage("Il menu è stato creato con successo", "success");
-    } catch (error) {
-      console.error("Errore durante il caricamento:", error);
-      showMessage("Errore durante il caricamento", "error");
+      setMessage("✅ Ordine salvata con successo!");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      console.error("Errore salvando ordine:", err);
+      setMessage("❌ Errore durante il salvataggio.");
+      setTimeout(() => setMessage(""), 3000);
     }
   };
 
@@ -65,32 +82,87 @@ export default function MenuPage() {
       <MenuFormModal
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
-        onSubmit={handleAddMenu}
+        onSubmit={() => {}}
       />
 
-      {/* Mesaj de succes/eroare */}
-      {message.text && (
-        <div
-          className={`fixed top-6 right-6 px-4 py-2 rounded shadow-lg text-white ${
-            message.type === "error" ? "bg-red-500" : "bg-green-600"
-          }`}
-        >
-          {message.text}
+      {message && (
+        <div className="fixed top-6 right-6 px-4 py-2 rounded bg-green-600 text-white shadow-lg">
+          {message}
         </div>
       )}
 
-      {/* Afișare meniuri dacă există */}
       <div className="mt-8 space-y-4">
-        {menus.length > 0 &&
-          menus.map((menu) => (
-            <div key={menu.id} className="border p-4 rounded shadow">
-              <h2 className="text-lg font-semibold">{menu.name}</h2>
-              <p className="text-sm text-gray-500">{menu.description}</p>
-              <p className="mt-2 text-sm">
-                <strong>Prezzo per persona:</strong> {menu.pricePerPerson} €
-              </p>
+        {menus.map((menu) => (
+          <div key={menu.id} className="border p-4 rounded shadow bg-white">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-lg font-semibold">{menu.name}</h2>
+                <p className="text-sm text-gray-500">{menu.description}</p>
+                <p className="text-sm mt-1">
+                  <strong>Prezzo per persona:</strong> {menu.pricePerPerson} €
+                  <br />
+                  <strong>Persone:</strong> da {menu.minGuests} a{" "}
+                  {menu.maxGuests}
+                </p>
+              </div>
+              <div className="flex gap-2 items-end">
+                <button
+                  onClick={() => handleToggleMenu(menu.id)}
+                  className="bg-indigo-600 text-white cursor-pointer px-4 py-2 rounded-2xl text-sm shadow hover:bg-indigo-700"
+                >
+                  {expandedMenuId === menu.id ? "Chiudi" : "Apri"}
+                </button>
+                <button
+                  onClick={() => handleSaveOrder(menu.id)}
+                  className="mt-4 bg-green-600 hover:bg-green-700 cursor-pointer text-white px-4 py-2  rounded-2xl text-sm shadow"
+                >
+                  Salva
+                </button>
+              </div>
             </div>
-          ))}
+
+            {expandedMenuId === menu.id && (
+              <div className="mt-4">
+                <DragDropContext
+                  onDragEnd={(result) => handleDragEnd(result, menu.id)}
+                >
+                  <Droppable droppableId={`droppable-${menu.id}`}>
+                    {(provided) => (
+                      <ul
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-2"
+                      >
+                        {menu.items.map((item, index) => (
+                          <Draggable
+                            key={item.id}
+                            draggableId={`${item.id}`}
+                            index={index}
+                          >
+                            {(provided) => (
+                              <li
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className="p-3 border rounded bg-gray-50"
+                              >
+                                <p className="font-semibold">{item.name}</p>
+                                <p className="text-sm text-gray-500">
+                                  Categoria: {item.category}
+                                </p>
+                              </li>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </ul>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

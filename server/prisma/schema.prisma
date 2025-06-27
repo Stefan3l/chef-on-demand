@@ -73,6 +73,7 @@ model MenuItem {
   name       String   // Numele felului
   category   String   // Antipasto, Primo, etc.
   type       String?  // All Inclusive, 1, 2, 3, 4
+  order      Int       @default(0)
   menuId     Int
   menu       Menu     @relation(fields: [menuId], references: [id])
 }
