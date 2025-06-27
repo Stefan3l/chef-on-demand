@@ -75,7 +75,6 @@ export default function ProfiloPersonale() {
             onChange={(e) => setBio(e.target.value)}
             placeholder="Chi sei come chef?"
             className="border-2 border-gray-200 rounded-lg p-2 w-full h-28 pr-16"
-            maxLength={150}
             required
           />
         </div>
