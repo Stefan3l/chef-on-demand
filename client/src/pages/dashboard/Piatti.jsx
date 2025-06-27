@@ -1,121 +1,92 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import DishFormModal from "../../dashboard/DishFormModal";
 
 export default function PiattiPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [dishes, setDishes] = useState([]);
+  const [error, setError] = useState("");
+  const [allItems, setAllItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const categories = ["Antipasto", "Primo Piatto", "Secondo", "Dessert"];
 
   useEffect(() => {
-    fetchDishes();
+    fetchMenuItems();
   }, []);
 
-  const fetchDishes = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/chef/menus", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDishes(response.data);
-    } catch (error) {
-      console.error(" Eroare la fetch:", error.message);
-    }
-  };
-
-  const handleAddDish = async (dishData) => {
+  const fetchMenuItems = async () => {
     try {
       setLoading(true);
-      setMessage("");
       const token = localStorage.getItem("token");
 
-      const response = await axios.post(
-        "http://localhost:3000/api/dishes/upload",
-        dishData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get("http://localhost:3000/api/menus", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      setMessage("Piatto creato con successo!");
-      setDishes((prev) => [...prev, response.data.image]);
+      const all = response.data.flatMap((menu) => menu.items);
+      setAllItems(all);
+      setFilteredItems(all);
     } catch (error) {
-      console.error(" Errore:", error.response?.data || error.message);
-      setMessage("Errore durante la creazione del piatto.");
+      console.error("Errore nel recupero dei piatti:", error);
+      setError("Errore nel recupero dei piatti.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteDish = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
+  const handleCategoryChange = (e) => {
+    const selected = e.target.value;
+    setSelectedCategory(selected);
 
-      await axios.delete(`http://localhost:3000/api/dishes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      // eliminiamo il piatto dalla lista
-      setDishes((prev) => prev.filter((dish) => dish.id !== id));
-    } catch (error) {
-      console.error(
-        " Errore durante l'eliminazione:",
-        error.response?.data || error.message
-      );
-      setMessage("Errore durante l'eliminazione del piatto.");
+    if (selected === "all") {
+      setFilteredItems(allItems);
+    } else {
+      setFilteredItems(allItems.filter((item) => item.category === selected));
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">I miei piatti</h1>
+      <h1 className="text-2xl font-semibold mb-4">I miei piatti dai menu</h1>
 
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-      >
-        ➕ Aggiungi il piatto
-      </button>
+      <div className="mb-4">
+        <label className="mr-2 font-medium">Filtra per categoria:</label>
+        <select
+          value={selectedCategory}
+          onChange={handleCategoryChange}
+          className="border rounded px-3 py-1"
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat === "all" ? "Tutte le categorie" : cat}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <DishFormModal
-        isOpen={isModalOpen}
-        setIsOpen={setIsModalOpen}
-        onSubmit={handleAddDish}
-      />
-
-      {loading && (
-        <p className="mt-4 text-sm text-gray-500">Salvataggio in corso...</p>
-      )}
-      {message && (
-        <p className="mt-2 text-sm font-medium text-green-600">{message}</p>
-      )}
+      {loading && <p className="text-gray-500">Caricamento in corso...</p>}
+      {error && <p className="text-red-600">{error}</p>}
 
       <ul className="mt-6 space-y-2">
-        {dishes
-          .filter((dish) => dish.name && dish.category)
-          .map((dish) => (
+        {filteredItems.length === 0 && !loading ? (
+          <p className="text-gray-500">Nessun piatto trovato.</p>
+        ) : (
+          filteredItems.map((item) => (
             <li
-              key={dish.id}
+              key={item.id}
               className="p-4 rounded-md border shadow-sm flex justify-between items-center"
             >
               <div>
-                <p className="font-semibold text-gray-800">{dish.name}</p>
+                <p className="font-semibold text-gray-800">{item.name}</p>
                 <p className="text-sm text-gray-500">
-                  Categoria: {dish.category}
+                  Categoria: {item.category}
                 </p>
               </div>
-
-              <button
-                onClick={() => handleDeleteDish(dish.id)}
-                className="text-red-600 hover:text-red-800 cursor-pointer"
-                title="Elimina piatto"
-              >
-                🗑️
-              </button>
             </li>
-          ))}
+          ))
+        )}
       </ul>
     </div>
   );
