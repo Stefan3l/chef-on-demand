@@ -6,7 +6,7 @@ export default function ProfileImageUploader({ onSuccess, onError }) {
   const [imageToCrop, setImageToCrop] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
 
-  // Obține imaginea de profil la montare
+  // Obține imaginea de profil o singură dată la montare
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -72,20 +72,6 @@ export default function ProfileImageUploader({ onSuccess, onError }) {
     setExistingImage(null);
     // TODO: eventual trimite și un request la backend pentru a șterge din DB
   };
-
-  const token = localStorage.getItem("token");
-  axios
-    .get("http://localhost:3000/api/chefs/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then((res) => {
-      if (res.data?.profileImage) {
-        setExistingImage(
-          `http://localhost:3000/${res.data.profileImage}?t=${Date.now()}`
-        );
-      }
-    })
-    .catch(console.error);
 
   return (
     <div className="mb-12 relative">
