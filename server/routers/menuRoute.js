@@ -7,6 +7,7 @@ const {
   deleteMenu,
   getMenus,
   reorderMenuItems,
+  getMenuItemsByChef,
 } = require("../controllers/menuController");
 
 const verifyToken = require("../middlewares/verifyToken");
@@ -21,5 +22,6 @@ router.delete("/menus/:id", verifyToken, deleteMenu);
 router.get("/chef/menus", verifyToken, getMenus);
 
 router.patch("/menus/:id/reorder", verifyToken, reorderMenuItems);
+router.get("/menu-items", verifyToken, getMenuItemsByChef);
 
 module.exports = router;

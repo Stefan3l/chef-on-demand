@@ -19,13 +19,13 @@ export default function PiattiPage() {
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      const response = await axios.get("http://localhost:3000/api/menus", {
+      const response = await axios.get("http://localhost:3000/api/menu-items", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const all = response.data.flatMap((menu) => menu.items);
+      const all = response.data; // <--- corect!
       setAllItems(all);
       setFilteredItems(all);
     } catch (error) {
@@ -35,7 +35,6 @@ export default function PiattiPage() {
       setLoading(false);
     }
   };
-
   const handleCategoryChange = (e) => {
     const selected = e.target.value;
     setSelectedCategory(selected);

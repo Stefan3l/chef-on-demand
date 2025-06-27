@@ -204,6 +204,32 @@ const deleteMenu = async (req, res) => {
   }
 };
 
+// funzione per ottenere i piatti di un chef specifico
+const getMenuItemsByChef = async (req, res) => {
+  try {
+    const chefId = req.user.id;
+
+    const items = await prisma.menuItem.findMany({
+      where: {
+        menu: {
+          chefId,
+        },
+      },
+      include: {
+        menu: true,
+      },
+      orderBy: {
+        order: "asc",
+      },
+    });
+
+    res.json(items);
+  } catch (error) {
+    console.error("Errore nel recupero dei piatti:", error);
+    res.status(500).json({ error: "Errore nel recupero dei piatti" });
+  }
+};
+
 module.exports = {
   createMenu,
   getAllMenus,
@@ -211,4 +237,5 @@ module.exports = {
   getMenus,
   deleteMenu,
   reorderMenuItems,
+  getMenuItemsByChef,
 };
