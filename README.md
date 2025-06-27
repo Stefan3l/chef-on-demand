@@ -112,3 +112,17 @@ Puoi testare le API usando Postman o Insomnia. Le rotte sono protette con JWT e 
 ## 👨‍🍳 Autore
 
 Sviluppato da Mihăilă Ștefănel – test tecnico Full Stack Developer – progetto **Chef On Demand**.
+
+## Screenshot
+
+### Home Page
+
+![Chef on Demand](https://github.com/Stefan3l/chef-on-demand/blob/main/client/public/screenshots/HomePage.png?raw=true)
+
+### Page Chef
+
+![Page Chef](https://github.com/Stefan3l/chef-on-demand/blob/main/client/public/screenshots/pagePreview.png?raw=true)
+
+### Registrazione
+
+![Registrazione](https://github.com/Stefan3l/chef-on-demand/blob/main/client/public/screenshots/registrazione.png?raw=true)
